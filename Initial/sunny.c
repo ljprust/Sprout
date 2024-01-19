@@ -20,19 +20,23 @@ static double thetap = 0.0;
 static double kasenA = 0.0;
 
 void setICParams( struct domain * theDomain ){
+   // constants
    Msun   = 2.0e33;
    yr     = 365.25*24.0*3600.0; // sec
    day    = 24.0*3600.0;
 
-   Eej    = 1.0e51;
-   Mej    = 1.0*Msun;
-   t0     = 100.0*day; // r0 = 1.728e16 cm
-   vmax   = 2.0e9;
+   // ejecta parameters
+   Eej    = 0.97e51; // 1.0e51;
+   Mej    = 1.789623e33; // 1.0*Msun;
+   t0     = 1.0*yr; // 100.0*day; // r0 = 1.728e16 cm
+   vmax   = 2.53e9; // 2.0e9;
+
+   // CSM parameters
    vwind  = 10.0e5;
    Mdot   = 4.0e-5*Msun/yr;
-   rhoISM = 1.0e-20; // 1.7e-24;
+   rhoISM = 6.31e-25; // 1.7e-24; (constant)
 
-   // Kasen fit params
+   // Kasen fit parameters
    kasen  = true;
    fh     = 0.1;
    mpower = 8.0;
@@ -62,6 +66,9 @@ void initial( double * prim , double * xi , double t ){
 
    if( r <= r0 ) {
       prim[RHO] = rhoSunny;
+      if( kasen ) {
+         prim[RHO] *= kasenFactor;
+      }
       prim[UU1] = x/r0 * vmax;
       prim[UU2] = y/r0 * vmax;
       prim[UU3] = z/r0 * vmax;
@@ -73,10 +80,6 @@ void initial( double * prim , double * xi , double t ){
       prim[UU3] = 0.0;
       prim[XXX] = 0.0;
    }
-   
-   if( kasen ) {
-      prim[RHO] *= kasenFactor;
-   }
 
-   prim[PPP] = 1.0e-6*prim[RHO]; // 1.0e-3*vmax*vmax*prim[RHO];
+   prim[PPP] = 1.0e-5*vmax*vmax*prim[RHO];
 }
