@@ -1,6 +1,10 @@
 
 #include "../defs.h"
 #include <stdbool.h>
+#include <stdio.h>
+
+#define NTHETAINPUT 224
+#define NRADINPUT 1000
 
 static double vmax   = 0.0;
 static double rhoISM = 0.0;
@@ -18,6 +22,12 @@ static double mpower = 0.0;
 static double thetah = 0.0;
 static double thetap = 0.0;
 static double kasenA = 0.0;
+static bool   readIC = false;
+static double xInput[NTHETAINPUT][NRADINPUT];
+static double yInput[NTHETAINPUT][NRADINPUT];
+static double rhoInput[NTHETAINPUT][NRADINPUT];
+static double vrInput[NTHETAINPUT][NRADINPUT];
+static double tracerInput[NTHETAINPUT][NRADINPUT];
 
 void setICParams( struct domain * theDomain ){
    // constants
@@ -28,7 +38,7 @@ void setICParams( struct domain * theDomain ){
    // ejecta parameters
    Eej    = 0.97e51; // 1.0e51;
    Mej    = 1.789623e33; // 1.0*Msun;
-   t0     = 1.0*yr; // 100.0*day; // r0 = 1.728e16 cm
+   t0     = 10.0*yr; // 100.0*day; // r0 = 1.728e16 cm
    vmax   = 2.53e9; // 2.0e9;
 
    // CSM parameters
@@ -43,28 +53,117 @@ void setICParams( struct domain * theDomain ){
    thetah = 30.0;
    thetap = 15.0;
    kasenA = 1.8;
+
+   // read ICs from file
+   readIC = true;
+
+   printf("initializing IC params :)\n");
+
+   if (readIC) {
+      FILE *xInputFile;
+      FILE *yInputFile;
+      FILE *rhoInputFile;
+      FILE *vrInputFile;
+      FILE *tracerInputFile;
+
+      char filename_x[256];
+      char filename_y[256];
+      char filename_rho[256];
+      char filename_vr[256];
+      char filename_tracer[256];
+
+      sprintf(filename_x,  "sproutinput_x.txt");
+      sprintf(filename_y,  "sproutinput_y.txt");
+      sprintf(filename_rho,"sproutinput_rho.txt");
+      sprintf(filename_vr, "sproutinput_vr.txt");
+      sprintf(filename_tracer, "sproutinput_tracer.txt");
+
+      xInputFile = fopen(filename_x,"r");
+      printf("opened %s\n", filename_x);
+      yInputFile = fopen(filename_y,"r");
+      printf("opened %s\n", filename_y);
+      rhoInputFile = fopen(filename_rho,"r");
+      printf("opened %s\n", filename_rho);
+      vrInputFile = fopen(filename_vr,"r");
+      printf("opened %s\n", filename_vr);
+      tracerInputFile = fopen(filename_tracer,"r");
+      printf("opened %s\n", filename_tracer);
+
+      int i, j;
+      for( i=0 ; i<NTHETAINPUT ; ++i ){
+         for( j=0 ; j<NRADINPUT ; ++j ){
+            fscanf( xInputFile,      "%lf", &xInput[i][j]      );
+            fscanf( yInputFile,      "%lf", &yInput[i][j]      );
+            fscanf( rhoInputFile,    "%lf", &rhoInput[i][j]    );
+            fscanf( vrInputFile,     "%lf", &vrInput[i][j]     );
+            fscanf( tracerInputFile, "%lf", &tracerInput[i][j] );
+         }
+      }
+
+      fclose(xInputFile);
+      fclose(yInputFile);
+      fclose(rhoInputFile);
+      fclose(vrInputFile);
+      fclose(tracerInputFile);
+   }
 }
 
 void initial( double * prim , double * xi , double t ){
 
    double x, y, z, r;
    double v0, r0, vr, rhoSunny;
-   double kasenFactor, theta;
+   double kasenFactor, thetaDeg, theta;
+   double xForReading, yForReading;
+   int i, j, minIndex_i, minIndex_j;
+   double dist2;
+   double minDist2 = 1.0e30;
+   double rhoRead, vrRead, tracerRead;
+
+   //printf("this random density: %5.3e\n",rhoInput[0][0]);
 
    x = xi[0];
    y = xi[1];
    z = xi[2];
    r = sqrt( x*x + y*y + z*z );
+   theta = acos(z/r);
+
+   if (readIC) {
+      xForReading = z;
+      yForReading = sqrt( x*x + y*y );
+
+      for( i=0 ; i<NTHETAINPUT ; ++i ){
+         for( j=0 ; j<NRADINPUT ; ++j ){
+            dist2 = ( xForReading - xInput[i][j] ) * ( xForReading - xInput[i][j] )
+                  + ( yForReading - yInput[i][j] ) * ( yForReading - yInput[i][j] );
+            if(dist2 < minDist2) {
+               minDist2 = dist2;
+               minIndex_i = i;
+               minIndex_j = j;
+            }
+         }
+      }
+      printf("found neighbor with indices %d %d\n",minIndex_i,minIndex_j);
+
+      rhoRead    = rhoInput[minIndex_i][minIndex_j];
+      vrRead     = vrInput[minIndex_i][minIndex_j];
+      tracerRead = tracerInput[minIndex_i][minIndex_j];
+   }
 
    r0 = vmax*t0;
    v0 = sqrt(4.0/3.0*Eej/Mej);
    vr = vmax*r/r0;
    rhoSunny = pow(3.0/4.0/3.14159, 1.5) * pow(Mej, 2.5)/pow(Eej, 1.5) /t0/t0/t0 * exp(-vr*vr/v0/v0);
    
-   theta = acos(x/r)*180.0/3.14159;
-   kasenFactor = fh+(1.0-fh)*pow(theta/thetah,mpower)/(1.0+pow(theta/thetah,mpower)) * (1.0+kasenA*exp(-pow(theta/thetah-1.0,2.0)/pow(thetap/thetah,2.0)));
+   thetaDeg = theta*180.0/3.14159;
+   kasenFactor = fh+(1.0-fh)*pow(thetaDeg/thetah,mpower)/(1.0+pow(thetaDeg/thetah,mpower)) * (1.0+kasenA*exp(-pow(thetaDeg/thetah-1.0,2.0)/pow(thetap/thetah,2.0)));
 
-   if( r <= r0 ) {
+   if( readIC ) {
+      prim[RHO] = rhoRead;
+      prim[UU1] = vrRead * x/r;
+      prim[UU2] = vrRead * y/r;
+      prim[UU3] = vrRead * z/r;
+      prim[XXX] = tracerRead;
+   } else if( r <= r0 ) {
       prim[RHO] = rhoSunny;
       if( kasen ) {
          prim[RHO] *= kasenFactor;
