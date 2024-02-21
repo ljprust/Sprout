@@ -1,5 +1,6 @@
 
 #include "defs.h"
+#include <stdbool.h>
 
 void setupDomain( struct domain * theDomain ){
      
@@ -23,12 +24,14 @@ void setupDomain( struct domain * theDomain ){
 
 void restart( struct domain * );
 void exchange1D( struct domain * , int );
-void initial( double * , double * , double );
+void initial( double * , double * , double , bool );
 void prim2cons( double * , double * , double * , double );
 
 int getN0( int , int , int );
 
 void setupCells( struct domain * theDomain ){
+
+   bool debug;
 
    int restart_flag = theDomain->theParList.restart_flag;
    if( restart_flag ) restart( theDomain );
@@ -47,12 +50,13 @@ void setupCells( struct domain * theDomain ){
    for( k=0 ; k<Nz ; ++k ){
       for( j=0 ; j<Ny ; ++j ){
          for( i=0 ; i<Nx ; ++i ){
+            bool debug = i==0 && j==0 && k==0;
             ijk  = i+Ng;
             if( theDomain->theParList.Num_y != 1 ) ijk += (Nx+2*Ng)*(j+Ng);
             if( theDomain->theParList.Num_z != 1 ) ijk += (Nx+2*Ng)*(Ny+2*Ng)*(k+Ng);
             struct cell * c = theCells+ijk;
             //set prims
-            if(!restart_flag) initial( c->prim , c->xi , t );
+            if(!restart_flag) initial( c->prim , c->xi , t , debug );
             prim2cons( c->prim , c->cons , c->xi , dx*dy*dz );
             //set gradients
             for( q=0 ; q<NUM_Q ; ++q ){
