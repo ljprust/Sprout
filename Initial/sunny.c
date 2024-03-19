@@ -63,8 +63,6 @@ void setICParams( struct domain * theDomain ){
    // model a quadrant of the cube or just an octant
    quadrant = true;
 
-   printf("initializing IC params :)\n");
-
    if (readIC) {
       FILE *xInputFile;
       FILE *yInputFile;
