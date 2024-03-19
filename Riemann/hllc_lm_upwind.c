@@ -49,7 +49,6 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
    double n[3] = {0.0};
    n[theDIM] = 1.0;
    double faceVelocity[3] = {0.0};
-   double faceV2;
 
    double * xl , * xr;
    xl = cL->xi;
@@ -67,6 +66,8 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
    double Ul[NUM_Q];
    double Fr[NUM_Q];
    double Ur[NUM_Q];
+   double Ul_unboosted[NUM_Q];
+   double Ur_unboosted[NUM_Q];
 
    double fluxFace[NUM_Q];
    double uFace[NUM_Q];
@@ -77,6 +78,9 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
 
    double C_F, C_U;
    get_flux_coefficients( no_of_dims , first_step , last_step , W , dt , &C_F , &C_U );
+
+   prim2cons( primL , Ul_unboosted , xl , 1.0 );
+   prim2cons( primR , Ur_unboosted , xr , 1.0 );
 
    // boost prims into face frame
    primL[UU1] -= wn*n[0];
@@ -104,25 +108,26 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
 
    if( 0.0 < Sl_LM ){
       flux( primL , Fl , xl , n );
-      prim2cons( primL , Ul , xl , 1.0 );
+      //prim2cons( primL , Ul , xl , 1.0 );
 
       for( q=0 ; q<NUM_Q ; ++q ){
          //Flux[q] = C_F*Fl[q] - C_U*wn*Ul[q];
          fluxFace[q] = Fl[q];
-         uFace[q] = Ul[q];
+         uFace[q] = Ul_unboosted[q];
       }
    }else if( 0.0 > Sr_LM ){
       flux( primR , Fr , xr , n );
-      prim2cons( primR , Ur , xr , 1.0 );
+      //prim2cons( primR , Ur , xr , 1.0 );
 
       for( q=0 ; q<NUM_Q ; ++q ){
          //Flux[q] = C_F*Fr[q] - C_U*wn*Ur[q];
          fluxFace[q] = Fr[q];
-         uFace[q] = Ur[q];
+         uFace[q] = Ur_unboosted[q];
       }
    }else{
       double UstarL[NUM_Q];
       double UstarR[NUM_Q];
+      double Ustar[NUM_Q];
       prim2cons( primL , Ul , xl , 1.0 );
       prim2cons( primR , Ur , xr , 1.0 );
       getUstar( primL , UstarL , xl , Sl , Ss , n );
@@ -131,36 +136,44 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
       flux( primR , Fr , xr , n );
 
       if( 0.0 < Ss ){
-         for( q=0 ; q<NUM_Q ; ++q )
+         for( q=0 ; q<NUM_Q ; ++q ) {
             //Flux[q] = C_F*0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) + Ss*(UstarL[q]-UstarR[q]) ) - C_U*wn*UstarL[q];
             //Flux[q] = C_F*( Fl[q] + Sl*( UstarL[q] - Ul[q] ) ) - C_U*wn*UstarL[q];
             fluxFace[q] = 0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) + Ss*(UstarL[q]-UstarR[q]) );
-            uFace[q] = UstarL[q];
+            Ustar[q] = UstarL[q];
+         }
       }else{
-         for( q=0 ; q<NUM_Q ; ++q )
+         for( q=0 ; q<NUM_Q ; ++q ) {
             //Flux[q] = C_F*0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) - Ss*(UstarL[q]-UstarR[q]) ) - C_U*wn*UstarR[q];
             //Flux[q] = C_F*( Fr[q] + Sr*( UstarR[q] - Ur[q] ) ) - C_U*wn*UstarR[q];
             fluxFace[q] = 0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) - Ss*(UstarL[q]-UstarR[q]) );
-            uFace[q] = UstarL[q];
+            Ustar[q] = UstarR[q];
+         }
       }
-
+      double primFace[NUM_Q];
+      cons2prim( Ustar, primFace, xl, 1.0 );
+      primFace[UU1] += wn*n[0];
+      primFace[UU2] += wn*n[1];
+      primFace[UU3] += wn*n[2];
+      prim2cons( primFace, uFace, xl, 1.0 );
    }
 
    double Q2dotw = fluxFace[SS1] * faceVelocity[0]
                  + fluxFace[SS2] * faceVelocity[1]
                  + fluxFace[SS3] * faceVelocity[2];
-   fluxCorrection[DEN] = (C_F-C_U) * fluxFace[DEN];
-   fluxCorrection[SS1] = C_F * fluxFace[DEN] * faceVelocity[0]
-                       + (C_F-C_U)*(fluxFace[SS1]+fluxFace[DEN]*faceVelocity[0]);
-   fluxCorrection[SS2] = C_F * fluxFace[DEN] * faceVelocity[1]
-                       + (C_F-C_U)*(fluxFace[SS2]+fluxFace[DEN]*faceVelocity[1]);
-   fluxCorrection[SS3] = C_F * fluxFace[DEN] * faceVelocity[2]
-                       + (C_F-C_U)*(fluxFace[SS3]+fluxFace[DEN]*faceVelocity[2]);
-   fluxCorrection[TAU] = C_F * ( -Q2dotw - 0.5 * fluxFace[DEN] * faceV2 )
-                       + (C_F-C_U)*(fluxFace[TAU]+Q2dotw+0.5*fluxFace[DEN]*faceV2);
+
+   fluxCorrection[DEN] = (C_U-C_F) * wn * uFace[DEN];
+   fluxCorrection[SS1] = -C_F * fluxFace[DEN] * faceVelocity[0]
+                       + (C_U-C_F) * wn * uFace[SS1];
+   fluxCorrection[SS2] = -C_F * fluxFace[DEN] * faceVelocity[1]
+                       + (C_U-C_F) * wn * uFace[SS2];
+   fluxCorrection[SS3] = -C_F * fluxFace[DEN] * faceVelocity[2]
+                       + (C_U-C_F) * wn * uFace[SS3];
+   fluxCorrection[TAU] = -C_F * ( Q2dotw + 0.5 * fluxFace[DEN] * wn * wn )
+                       + (C_U-C_F) * wn * uFace[TAU];
 
    for( q=0 ; q<NUM_Q ; ++q ){
-      Flux[q] = fluxFace[q] - fluxCorrection[q];
+      Flux[q] = C_F*fluxFace[q] - fluxCorrection[q];
    }
 
    double dA = dy*dz*n[0] + dz*dx*n[1] + dx*dy*n[2];

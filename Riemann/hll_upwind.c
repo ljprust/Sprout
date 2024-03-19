@@ -142,21 +142,7 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
    double Q2dotw = fluxFace[SS1] * faceVelocity[0]
                  + fluxFace[SS2] * faceVelocity[1]
                  + fluxFace[SS3] * faceVelocity[2];
-   /*
-   fluxCorrection[DEN] = (C_F-C_U) * fluxFace[DEN];
-   fluxCorrection[SS1] = C_F * fluxFace[DEN] * faceVelocity[0]
-                       + (C_F-C_U)*(fluxFace[SS1]+fluxFace[DEN]*faceVelocity[0]);
-   fluxCorrection[SS2] = C_F * fluxFace[DEN] * faceVelocity[1]
-                       + (C_F-C_U)*(fluxFace[SS2]+fluxFace[DEN]*faceVelocity[1]);
-   fluxCorrection[SS3] = C_F * fluxFace[DEN] * faceVelocity[2]
-                       + (C_F-C_U)*(fluxFace[SS3]+fluxFace[DEN]*faceVelocity[2]);
-   fluxCorrection[TAU] = C_F * ( -Q2dotw - 0.5 * fluxFace[DEN] * faceV2 )
-                       + (C_F-C_U)*(fluxFace[TAU]+Q2dotw+0.5*fluxFace[DEN]*faceV2);
 
-   for( q=0 ; q<NUM_Q ; ++q ){
-      Flux[q] = C_F*fluxFace[q] - fluxCorrection[q];
-   }
-   */
    fluxCorrection[DEN] = (C_U-C_F) * wn * uFace[DEN];
    fluxCorrection[SS1] = -C_F * fluxFace[DEN] * faceVelocity[0]
                        + (C_U-C_F) * wn * uFace[SS1];
