@@ -93,8 +93,8 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
    vel( primL , primR , &Sl , &Sr , &Ss , n );
 
    double Mach_L, Mach_R, Mach_local, Mach_limit;
-   Mach_L = fabs( (primL[UU1+theDIM]-wn)/sqrt(5./3.*primL[PPP]/primL[RHO]) );
-   Mach_R = fabs( (primR[UU1+theDIM]-wn)/sqrt(5./3.*primR[PPP]/primR[RHO]) );
+   Mach_L = fabs( (cL->prim[UU1+theDIM]-wn)/sqrt(5./3.*cL->prim[PPP]/cL->prim[RHO]) );
+   Mach_R = fabs( (cR->prim[UU1+theDIM]-wn)/sqrt(5./3.*cR->prim[PPP]/cR->prim[RHO]) );
    Mach_local = Mach_L;
    if(Mach_R>Mach_L) Mach_local = Mach_R;
    Mach_limit = 0.5;
