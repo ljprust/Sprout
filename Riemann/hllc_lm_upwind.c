@@ -76,8 +76,20 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
 
    double wn = get_wn( xl , dx , dy , dz , W , theDIM );
 
+   faceVelocity[theDIM] = wn;
+
    double C_F, C_U;
    get_flux_coefficients( no_of_dims , first_step , last_step , W , dt , &C_F , &C_U );
+
+   double Mach_L, Mach_R, Mach_local, Mach_limit;
+   Mach_L = fabs( (cL->prim[UU1+theDIM]-wn)/sqrt(5./3.*cL->prim[PPP]/cL->prim[RHO]) );
+   Mach_R = fabs( (cR->prim[UU1+theDIM]-wn)/sqrt(5./3.*cR->prim[PPP]/cR->prim[RHO]) );
+   Mach_local = Mach_L;
+   if(Mach_R>Mach_L) Mach_local = Mach_R;
+   Mach_limit = 0.5;
+
+   double phi = 1.0;
+   if( Mach_local<Mach_limit ) phi = sin(Mach_local/Mach_limit*M_PI/2.);
 
    prim2cons( primL , Ul_unboosted , xl , 1.0 );
    prim2cons( primR , Ur_unboosted , xr , 1.0 );
@@ -92,21 +104,11 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
 
    vel( primL , primR , &Sl , &Sr , &Ss , n );
 
-   double Mach_L, Mach_R, Mach_local, Mach_limit;
-   Mach_L = fabs( (cL->prim[UU1+theDIM]-wn)/sqrt(5./3.*cL->prim[PPP]/cL->prim[RHO]) );
-   Mach_R = fabs( (cR->prim[UU1+theDIM]-wn)/sqrt(5./3.*cR->prim[PPP]/cR->prim[RHO]) );
-   Mach_local = Mach_L;
-   if(Mach_R>Mach_L) Mach_local = Mach_R;
-   Mach_limit = 0.5;
-
-   double phi = 1.0;
-   if( Mach_local<Mach_limit ) phi = sin(Mach_local/Mach_limit*M_PI/2.);
-
    double Sl_LM = Sl*phi;
    double Sr_LM = Sr*phi;
 
 
-   if( 0.0 < Sl_LM ){
+   if( 0.0 < Sl ){
       flux( primL , Fl , xl , n );
       //prim2cons( primL , Ul , xl , 1.0 );
 
@@ -115,7 +117,7 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
          fluxFace[q] = Fl[q];
          uFace[q] = Ul_unboosted[q];
       }
-   }else if( 0.0 > Sr_LM ){
+   }else if( 0.0 > Sr ){
       flux( primR , Fr , xr , n );
       //prim2cons( primR , Ur , xr , 1.0 );
 
@@ -140,6 +142,7 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
             //Flux[q] = C_F*0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) + Ss*(UstarL[q]-UstarR[q]) ) - C_U*wn*UstarL[q];
             //Flux[q] = C_F*( Fl[q] + Sl*( UstarL[q] - Ul[q] ) ) - C_U*wn*UstarL[q];
             fluxFace[q] = 0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) + Ss*(UstarL[q]-UstarR[q]) );
+            //fluxFace[q] = Fl[q] + Sl*( UstarL[q] - Ul[q] );
             Ustar[q] = UstarL[q];
          }
       }else{
@@ -147,6 +150,7 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
             //Flux[q] = C_F*0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) - Ss*(UstarL[q]-UstarR[q]) ) - C_U*wn*UstarR[q];
             //Flux[q] = C_F*( Fr[q] + Sr*( UstarR[q] - Ur[q] ) ) - C_U*wn*UstarR[q];
             fluxFace[q] = 0.5*( Fl[q] + Fr[q] + Sl_LM*(UstarL[q]-Ul[q]) + Sr_LM*(UstarR[q]-Ur[q]) - Ss*(UstarL[q]-UstarR[q]) );
+            //fluxFace[q] = Fr[q] + Sr*( UstarR[q] - Ur[q] );
             Ustar[q] = UstarR[q];
          }
       }
