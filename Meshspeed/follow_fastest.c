@@ -83,6 +83,7 @@ void set_W( struct domain * theDomain , int reset ){
             if( Num_y != 1 ) ijk += (Nx+2*Ng)*j;
             if( Num_z != 1 ) ijk += (Nx+2*Ng)*(Ny+2*Ng)*k;
             struct cell * c = theDomain->theCells+ijk;
+	    if( c->xi[1] < 100.0*dy ) continue;
             for( dim=0 ; dim<maxdim ; ++dim  ){
                if( dim==0 ){
                    Lmin = x_cen - (double)Num_x * dx /2.;
