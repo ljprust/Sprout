@@ -1,4 +1,4 @@
-enum{RHO,PPP,UU1,UU2,UU3,XXX};
+enum{RHO,PPP,UU1,UU2,UU3,XXX,YYY};
 enum{DEN,TAU,SS1,SS2,SS3};
 
 
@@ -11,7 +11,7 @@ enum{DEN,TAU,SS1,SS2,SS3};
 
 
 #define NUM_C 5
-#define NUM_N 1
+#define NUM_N 2
 #define NUM_Q (NUM_C+NUM_N)
 #define NUM_G 2
 
