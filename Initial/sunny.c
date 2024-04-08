@@ -191,12 +191,12 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[UU3] = 0.0;
       prim[XXX] = 0.0;
    }
-/*
-   if( thetaDeg < 5.0 ) {
-      prim[XXX] = 0.0;
+
+   if( thetaDeg < 30.0 && vr < 2.0e8 ) {
+      prim[YYY] = 1.0;
    } else {
-      prim[XXX] = 1.0;
+      prim[YYY] = 0.0;
    }
-*/
+
    prim[PPP] = 1.0e-5*vmax*vmax*prim[RHO];
 }
