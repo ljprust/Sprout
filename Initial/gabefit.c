@@ -14,6 +14,7 @@ static double Mej      = 0.0;
 static double vwind    = 0.0;
 static double Mdot     = 0.0;
 static double t0       = 0.0;
+static double tfit     = 0.0;
 static double Msun     = 0.0;
 static double yr       = 0.0;
 static double day      = 0.0;
@@ -46,7 +47,8 @@ void setICParams( struct domain * theDomain ){
    Eej    = 0.97e51; // 1.0e51;
    Mej    = 1.789623e33; // 1.0*Msun;
    t0     = 10.0*yr; // 100.0*day; // r0 = 1.728e16 cm
-   vmax   = 2.53e9; // 2.0e9;
+   tfit   = 10000.0;
+   vmax   = 2.318e9; // 2.53e9; // 2.0e9;
    thetamin = 0.01;
 
    // CSM parameters
@@ -56,8 +58,6 @@ void setICParams( struct domain * theDomain ){
 
    // model a quadrant of the cube or just an octant
    quadrant = true;
-
-   double afit( double radius );
 }
 
 double afit( double radius ) {
@@ -165,10 +165,8 @@ void initial( double * prim , double * xi , double t , bool debug ){
    double x, y, z, r;
    double v0, vr, rhoSunny, rhoNorm;
    double thetaDeg, theta;
-   double r0, r_max;
+   double r0, r_max, rfit;
    double thetabow, thetapeak, thetarecomp, thetarecomppeak;
-
-   r0 = 0.0;
 
    x = xi[0];
    y = xi[1];
@@ -178,15 +176,17 @@ void initial( double * prim , double * xi , double t , bool debug ){
    }
 
    r = sqrt( x*x + y*y + z*z );
+   r0 = vmax*t0;
+   rfit = r*tfit/t0;
    theta = acos(z/r);
    thetaDeg = theta*180.0/3.14159;
    r_max = rmax(theta, r0);
-   theta = MAX(theta, thetamin);
+   //theta = MAX(theta, thetamin);
 
-   thetabow        = thetabowfit(r);
-   thetapeak       = thetapeakfit(r);
-   thetarecomp     = thetarecompfit(r);
-   thetarecomppeak = thetarecomppeakfit(r);
+   thetabow        = thetabowfit(rfit);
+   thetapeak       = thetapeakfit(rfit);
+   thetarecomp     = thetarecompfit(rfit);
+   thetarecomppeak = thetarecomppeakfit(rfit);
 
    v0 = sqrt(4.0/3.0*Eej/Mej);
    vr = r/t0;
@@ -211,15 +211,16 @@ void initial( double * prim , double * xi , double t , bool debug ){
    } else if ( theta >= thetabow ) { // also unshocked
       prim[RHO] = rhoSunny;
    } else if ( theta >= thetarecomp ) { // in rarefaction wave
-      rhoNorm = outerfit(theta, thetapeak, thetabow, r);
+      rhoNorm = outerfit(theta, thetapeak, thetabow, rfit);
       prim[RHO] = rhoNorm*rhoSunny;
    } else if ( theta <= thetarecomppeak ) { // within recompression
-      rhoNorm = innerfit(theta, thetarecomppeak, r);
+      rhoNorm = innerfit(theta, thetarecomppeak, rfit);
+      rhoNorm = MAX(rhoNorm,0.01);
       prim[RHO] = rhoNorm*rhoSunny;
    } else { // transition region
       double rhoL, rhoR;
-      rhoL = innerfit(thetarecomppeak, thetarecomppeak, r);
-      rhoR = outerfit(thetarecomp, thetapeak, thetabow, r);
+      rhoL = innerfit(thetarecomppeak, thetarecomppeak, rfit);
+      rhoR = outerfit(thetarecomp, thetapeak, thetabow, rfit);
       rhoNorm = transfit(theta, thetarecomppeak, thetarecomp, rhoL, rhoR);
       prim[RHO] = rhoNorm*rhoSunny;
    }
