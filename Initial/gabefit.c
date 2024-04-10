@@ -9,6 +9,7 @@
 
 static double vmax     = 0.0;
 static double rhoISM   = 0.0;
+static double rhoNormFloor = 0.0;
 static double Eej      = 0.0;
 static double Mej      = 0.0;
 static double vwind    = 0.0;
@@ -20,7 +21,7 @@ static double yr       = 0.0;
 static double day      = 0.0;
 static double Lz       = 0.0;
 static bool   quadrant = false;
-static double thetamin = 0.0;
+//static double thetamin = 0.0;
 
 double outerfit( double th, double thpeak, double thbow, double rad );
 double innerfit( double th, double threcomppeak, double rad );
@@ -49,7 +50,8 @@ void setICParams( struct domain * theDomain ){
    t0     = 10.0*yr; // 100.0*day; // r0 = 1.728e16 cm
    tfit   = 10000.0;
    vmax   = 2.318e9; // 2.53e9; // 2.0e9;
-   thetamin = 0.01;
+   //thetamin = 0.01;
+   rhoNormFloor = 0.01;
 
    // CSM parameters
    vwind  = 10.0e5;
@@ -212,16 +214,18 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[RHO] = rhoSunny;
    } else if ( theta >= thetarecomp ) { // in rarefaction wave
       rhoNorm = outerfit(theta, thetapeak, thetabow, rfit);
+      rhoNorm = MAX(rhoNorm,rhoNormFloor);
       prim[RHO] = rhoNorm*rhoSunny;
    } else if ( theta <= thetarecomppeak ) { // within recompression
       rhoNorm = innerfit(theta, thetarecomppeak, rfit);
-      rhoNorm = MAX(rhoNorm,0.01);
+      rhoNorm = MAX(rhoNorm,rhoNormFloor);
       prim[RHO] = rhoNorm*rhoSunny;
    } else { // transition region
       double rhoL, rhoR;
       rhoL = innerfit(thetarecomppeak, thetarecomppeak, rfit);
       rhoR = outerfit(thetarecomp, thetapeak, thetabow, rfit);
       rhoNorm = transfit(theta, thetarecomppeak, thetarecomp, rhoL, rhoR);
+      rhoNorm = MAX(rhoNorm,rhoNormFloor);
       prim[RHO] = rhoNorm*rhoSunny;
    }
 
