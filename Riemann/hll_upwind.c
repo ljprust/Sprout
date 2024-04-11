@@ -1,6 +1,7 @@
 
 #include "../defs.h"
 
+void cons2prim( double * , double * , double * , double );
 void prim2cons( double * , double * , double * , double );
 void flux( double * , double * , double * , double * );
 void vel( double * , double * , double * , double * , double * , double * );
