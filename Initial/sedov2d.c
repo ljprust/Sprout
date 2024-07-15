@@ -11,7 +11,7 @@ static double zo = 0.0;
 
 void setICParams( struct domain * theDomain ){
    r0 = 0.005;
-   xo = theDomain->theParList.Lx/2.;
+   xo = 0.0;//theDomain->theParList.Lx/2.;
    yo = theDomain->theParList.Ly/2.;
    p0 = 3.5e5;
 }
@@ -21,14 +21,22 @@ void initial( double * prim , double * xi , double t ){
    double x = xi[0]-xo;
    double y = xi[1]-yo;
    double r = sqrt(x*x+y*y);
-   if( r<=r0 )
+   if( r<=r0 ){
       prim[PPP] = p0;
-   else{
+      prim[XXX] = 1.0;
+   }else{
       prim[PPP] = 1e-6;
+      prim[XXX] = 0.0;
    }
    prim[RHO] = 1.0;
    prim[UU1] = 0.0;
    prim[UU2] = 0.0;
    prim[UU3] = 0.0;
-
+/*
+   if( r<=r0/2.0 ){
+      prim[YYY] = 1.0;
+   }else{
+      prim[YYY] = 0.0;
+   }
+*/
 }

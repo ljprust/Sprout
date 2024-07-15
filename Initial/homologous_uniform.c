@@ -5,6 +5,7 @@ static double x_zero = 0.0;
 static double y_zero = 0.0;
 static double z_zero = 0.0;
 static double gam    = 0.0;
+static double D      = 0.0;
 
 void setICParams( struct domain * theDomain ){
    gam = theDomain->theParList.Adiabatic_Index;
@@ -25,7 +26,7 @@ void initial( double * prim , double * xi , double t ){
    if(D>2.) z = xi[2]-z_zero;
 
    prim[RHO] = 1.0;
-   prim[PPP] = 1.0/gam;
+   prim[PPP] = 1.0e-4/gam;
    prim[UU1] = x/t;
    prim[UU2] = y/t;
    prim[UU3] = z/t;
