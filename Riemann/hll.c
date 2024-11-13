@@ -1,6 +1,8 @@
 
 #include "../defs.h"
 
+int set_accuracy(void);
+
 void prim2cons( double * , double * , double * , double );
 void flux( double * , double * , double * , double * );
 void vel( double * , double * , double * , double * , double * , double * );
@@ -55,9 +57,10 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
 
    int q;
    for( q=0 ; q<NUM_Q ; ++q ){
-      primL[q] = cL->prim[q] + .5 * (cL->gradx[q]*dx*n[0] + cL->grady[q]*dy*n[1] + cL->gradz[q]*dz*n[2]);
-      primR[q] = cR->prim[q] - .5 * (cR->gradx[q]*dx*n[0] + cR->grady[q]*dy*n[1] + cR->gradz[q]*dz*n[2]);
+      primL[q] = cL->prim[q] + .5 * (cL->gradx[q]*dx*n[0] + cL->grady[q]*dy*n[1] + cL->gradz[q]*dz*n[2]) + (cL->pblax[q]*n[0] + cL->pblay[q]*n[1] + cL->pblaz[q]*n[2]);
+      primR[q] = cR->prim[q] - .5 * (cR->gradx[q]*dx*n[0] + cR->grady[q]*dy*n[1] + cR->gradz[q]*dz*n[2]) + (cL->pblax[q]*n[0] + cL->pblay[q]*n[1] + cL->pblaz[q]*n[2]);
    }
+
 
    double Sl,Sr,Ss;
 

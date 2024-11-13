@@ -1,18 +1,40 @@
+enum{MH,PH};
 
 #include "../defs.h"
 
+#define eps 1e-40
+
 int set_accuracy(void){
-   return 2;
+   return 3;
 }
 
-double minmod( double x , double y , double z ){
-   double a = x;
-   if( x*y < 0.0 ) a = 0.0;
-   if( fabs(y) < fabs(a) ) a = y;
-   if( y*z < 0.0 ) a = 0.0;
-   if( fabs(z) < fabs(a) ) a = z;
-   return(a);
+void set_betas( double um1 , double u0 , double up1 , double * beta_1 , double * beta_2 , int mode ){
+   if(mode==MH){
+      *beta_1 = 13.*um1*um1/12. - u0*um1/6. + u0*u0/12.;
+      *beta_2 = u0*u0/12. - u0*up1/6. + 13.*up1*up1/12.;
+   }else{
+      *beta_1 = um1*um1/12. - u0*um1/6. + 13.*u0*u0/12.;
+      *beta_2 = 13.*u0*u0/12. - u0*up1/6. + up1*up1/12.;
+   }
 }
+
+void set_face_values( double um1 , double u0 , double up1 , double beta_1 , double beta_2 , double * uh , int mode ){
+   double w1,w2,u1_h,u2_h;
+   if(mode==MH){
+      w1   = 1./( 1. + (eps+beta_1)*(eps+beta_1)/2./(eps+beta_2)/(eps+beta_2)  );
+      w2   = 1./( 1. + (eps+beta_2)*(eps+beta_2)*2./(eps+beta_1)/(eps+beta_1)  );
+      u1_h = (u0+um1)/2.;
+      u2_h = (3.*u0-up1)/2.;     
+   }else{
+      w1   = 1./( 1. + (eps+beta_1)*(eps+beta_1)*2./(eps+beta_2)/(eps+beta_2)  );
+      w2   = 1./( 1. + (eps+beta_2)*(eps+beta_2)/2./(eps+beta_1)/(eps+beta_1)  );
+      u1_h = (3.*u0-um1)/2.;
+      u2_h = (u0+up1)/2.;
+   }
+   *uh  = w1*u1_h + w2*u2_h; 
+}
+
+
 
 void space_recon1D( struct domain * theDomain , int theDIM ){
 
@@ -24,11 +46,12 @@ void space_recon1D( struct domain * theDomain , int theDIM ){
    double dx = theDomain->dx;
    double dy = theDomain->dy;
    double dz = theDomain->dz;
-   double PLM = theDomain->theParList.PLM;
+
 
    int n[3]  = {0};
    n[theDIM] = 1;
-   double pL,pC,pR,sL,sR,sC;
+   double pL,pC,pR;
+   double beta_1,beta_2,pimh,piph;
    double dl = (double)n[0]*dx + (double)n[1]*dy + (double)n[2]*dz;
 
    int i_end = Nx+2*Ng;
@@ -68,12 +91,22 @@ void space_recon1D( struct domain * theDomain , int theDIM ){
                pL = cL->prim[q];
                pC =  c->prim[q];
                pR = cR->prim[q];
-               sL = (pC - pL)/dl;
-               sR = (pR - pC)/dl;
-               sC = (pR - pL)/dl;
-               if( theDIM==0 ) c->gradx[q] = minmod( PLM*sL , sC , PLM*sR );
-               if( theDIM==1 ) c->grady[q] = minmod( PLM*sL , sC , PLM*sR );
-               if( theDIM==2 ) c->gradz[q] = minmod( PLM*sL , sC , PLM*sR );
+               set_betas(pL,pC,pR,&beta_1,&beta_2,MH);
+               set_face_values(pL,pC,pR,beta_1,beta_2,&pimh,MH);
+               set_betas(pL,pC,pR,&beta_1,&beta_2,PH);
+               set_face_values(pL,pC,pR,beta_1,beta_2,&piph,PH);
+               if( theDIM==0 ){
+                  c->gradx[q] = (piph-pimh)/dl;
+                  c->pblax[q] = (piph+pimh)/2.-pC;
+               }
+               if( theDIM==1 ){
+                  c->grady[q] = (piph-pimh)/dl;
+                  c->pblay[q] = (piph+pimh)/2.-pC;
+               }
+               if( theDIM==2 ){
+                  c->gradz[q] = (piph-pimh)/dl;
+                  c->pblaz[q] = (piph+pimh)/2.-pC;
+               }
            }
          }
       }

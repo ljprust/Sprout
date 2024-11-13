@@ -59,6 +59,9 @@ void setupCells( struct domain * theDomain ){
                c->gradx[q] = 0.0;
                c->grady[q] = 0.0;
                c->gradz[q] = 0.0;
+               c->pblax[q] = 0.0;
+               c->pblay[q] = 0.0;
+               c->pblaz[q] = 0.0;
             }
          }
       }
@@ -140,6 +143,7 @@ double getmindt( struct domain * theDomain ){
 }
 
 void report( struct domain * , double , double);
+void snapshot( struct domain * , char * );
 void output( struct domain * , char * );
 
 void possiblyOutput( struct domain * theDomain , double dt , int override ){
@@ -149,6 +153,7 @@ void possiblyOutput( struct domain * theDomain , double dt , int override ){
    double t_fin = theDomain->t_fin;
    double Nrpt = theDomain->N_rpt;
    double Nchk = theDomain->N_chk;
+   double Nsnp = theDomain->N_snp;
    int LogOut = theDomain->theParList.Out_LogTime;
    int n0;
 
@@ -173,6 +178,16 @@ void possiblyOutput( struct domain * theDomain , double dt , int override ){
          if(theDomain->rank==0) printf("Creating Final Checkpoint...\n");
          output( theDomain , "output" );
       }
+   }
+
+   n0 = (int)( t*Nsnp/t_fin );
+   if( LogOut ) n0 = (int)( Nsnp*log(t/t_min)/log(t_fin/t_min) );
+   if( (theDomain->nsnp < n0 && Nsnp>0) || override ){
+      theDomain->nsnp = n0;
+      char filename[256];
+      if(!override) sprintf( filename , "map_%04d.dat" , n0 );
+      else sprintf( filename , "map.dat" );
+      snapshot( theDomain , filename );
    }
 
 }

@@ -1,22 +1,29 @@
 
 #include "../defs.h"
 
-static double x_cen = 0.0;
-static double y_cen = 0.0;
-static double z_cen = 0.0;
+static double x_cen  = 0.0;
+static double y_cen  = 0.0;
+static double z_cen  = 0.0;
+static double t_min  = 0.0;
+static double eta_on = 0.0;
 
 void setMeshMotionParams( struct domain * theDomain ){
 
-   x_cen = theDomain->theParList.MM_x0;
-   y_cen = theDomain->theParList.MM_y0;
-   z_cen = theDomain->theParList.MM_z0;
+   x_cen = theDomain->theParList.MM_x0 * theDomain->theParList.Lx;
+   y_cen = theDomain->theParList.MM_y0 * theDomain->theParList.Ly;
+   z_cen = theDomain->theParList.MM_z0 * theDomain->theParList.Lz;
+   t_min  = theDomain->t_init;
+   eta_on = theDomain->theParList.eta_on; 
     
 }
 
 void set_W( struct domain * theDomain , int reset ){
 
-   theDomain->W = theDomain->theParList.W0/theDomain->t;
-
+   double t = theDomain->t;
+   if( t<t_min*eta_on )
+      theDomain->W = 0.;
+   else
+      theDomain->W = theDomain->theParList.W0/theDomain->t;
 }
 
 double get_wn( double * xl , double dx , double dy , double dz , double W , int theDIM ){

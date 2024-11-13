@@ -107,6 +107,8 @@ void add_flux( struct domain * theDomain , double dt , int first_step , int last
 void source( double * , double * , double * , double );
 void grav_src( double * , double * , double * , double , double );
 void nozz_src( double * , double * , double * , double , double , double , double , double );
+//additiional source functions, e.g., for modifying passive scalar to calculate ionization age
+void scalar_src( double * , double * , double * , double , double , double );
 
 double get_source_coefficient( int no_of_dims , int first_step , int last_step , double W , double dt ){
 
@@ -174,6 +176,7 @@ void add_source( struct domain * theDomain , double dt , int first_step , int la
             source( c->prim , c->cons , c->xi , dx*dy*dz*dt*C_S );
             if( grav_switch ) grav_src( c->prim , c->cons , c->xi , dx*dy*dz*dt*C_S , t );
             if( nozz_switch ) nozz_src( c->prim , c->cons , c->xi , dx, dy, dz, dt*C_S , t );
+            scalar_src( c->prim , c->cons , c->xi , dx*dy*dz*C_S , dt , t );
             
          }
       }
@@ -234,4 +237,16 @@ void onestep( struct domain * theDomain , double RK , double dt , int first_step
    calc_prim( theDomain );
 
    if( first_step ) regrid( theDomain , dt );
+}
+
+
+
+//additional function definitions in onestep.c
+void scalar_src( double * prim , double * cons , double * xi , double dV_corr, double dt , double t ){
+   //calculate ionization age of element
+   double thres = 1e-3;    //temperature threshold for element to be shocked (problem specific)
+   if(prim[PPP]/prim[RHO]>thres){ 
+      double n   = prim[RHO]/prim[XX5];    // number density = mass density/mean atomic weight
+      prim[XX6] += n*dt;                   // ionization age +=n*dt
+   }
 }

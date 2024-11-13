@@ -1,14 +1,8 @@
 
 #include "../defs.h"
-
+//based on time to crash rather than distance from center
 static int D = 0;
-static double x_cen = 0.0;
-static double y_cen = 0.0;
-static double z_cen = 0.0;
-static double t_min  = 0.0;
-static double eta_on = 0.0;
-static double eps = 0.0;
-static double shock_pos = 0.0;
+static double x_cen , y_cen , z_cen , t_min  , eta_on , eps , shock_pos;
 
 
 
@@ -23,27 +17,20 @@ void setMeshMotionParams( struct domain * theDomain ){
    t_min  = theDomain->t_init;
    eta_on = theDomain->theParList.eta_on; 
    shock_pos = 0.9;
-   eps = 0.5;
+   eps = 0.8;
     
 }
 
 double marker( struct cell * c , int dim , double x0 ){
    //return ( c->prim[UU1+dim]*c->prim[RHO] );
    //return ( c->prim[UU1+dim]*c->prim[PPP]*(c->xi[dim]-x0) );
-   return ( c->prim[UU1+dim]); //*c->prim[XXX] );
-   //return ( (1.-c->prim[XXX])*c->prim[RHO] );
+   //return ( c->prim[UU1+dim] );
+   return ( (1.-c->prim[XXX])*c->prim[RHO] );
 }
 
-
-double W_cutoff( double x , double x0 , double L ){
-   // = 0 if x<x0, = 1 if x>x0, but smooth
-   //if(x<x0) return 0.; else return 1.;
-   //return (tanh(400.*(x-x0))+1.)/2.;
-   double k = 1.+log(x/x0)/log(L/x0);
-   if(k>0.) return k; else return 0.;
+double dist_from_center( struct cell * c , int dim , double x0 ){
+   return fabs(c->xi[dim]-x0);
 }
-
-
 
 
 
@@ -54,10 +41,10 @@ void set_W( struct domain * theDomain , int reset ){
    if( t<t_min*eta_on ){
       theDomain->W = 0.;
    }else{
-      int i,j,k,ijk,dim,fastdim;
-      double r,rshock,v_fast,pv,r_perp;
-      double pv_fast = 0.;
-      double r_fast  = 0.;
+      int i,j,k,ijk,k_st,dim;
+      double dist_max,mrk,v_local;
+      double mrk_max = 0.;
+      double v_max   = 0.;
 
       int Nx = theDomain->Nx;
       int Ny = theDomain->Ny;
@@ -78,9 +65,9 @@ void set_W( struct domain * theDomain , int reset ){
       L0s[0] = theDomain->theParList.Lx;
       L0s[1] = theDomain->theParList.Ly;
       L0s[2] = theDomain->theParList.Lz;
-      Cs[0]  = x_cen/L0s[0];
-      Cs[1]  = y_cen/L0s[1];
-      Cs[2]  = z_cen/L0s[2];
+      Cs[0]  = x_cen;
+      Cs[1]  = y_cen;
+      Cs[2]  = z_cen;
  
       int i0=0 ; int j0=0 ; int k0=0; 
       int i1=1 ; int j1=1 ; int k1=1;
@@ -106,24 +93,20 @@ void set_W( struct domain * theDomain , int reset ){
                if( theDomain->theParList.Num_y != 1 ) ijk += (Nx+2*Ng)*j;
                if( theDomain->theParList.Num_z != 1 ) ijk += (Nx+2*Ng)*(Ny+2*Ng)*k;
                struct cell * c = theDomain->theCells+ijk;
-               for( dim=0 ; dim<1 ; ++dim ){
-                  pv = marker( c, dim, Cs[dim] );
-                  if( pv_fast<pv ){
-                     pv_fast  = pv;
-                     fastdim  = dim;
-                  }
+               for( dim=0 ; dim<D ; ++dim ){
+                  mrk = marker( c, dim, Cs[dim] );
+                  if( mrk_max<mrk ) mrk_max  = mrk;
                }
                
             }
          }
       }
-      rshock = shock_pos*Ls[fastdim]; ///(1.-Cs[fastdim]);
-      //if(fabs(t/3.176e-2-1.)<.1) printf("r_shock = %e \n", rshock);
-      MPI_Allreduce( MPI_IN_PLACE , &pv_fast , 1 , MPI_DOUBLE , MPI_MAX , theDomain->theComm );
-      //if(fabs(t/3.176e-2-1.)<.1) printf("marker_max = %e \n", pv_fast);
 
-      //if(fabs(t/6.32e-2-1.)<.1) printf("CHECK: t=%.4e, marker=%.4e, r_sh=%.4e\n",t,pv_fast,rshock);    
-      
+      MPI_Allreduce( MPI_IN_PLACE , &mrk_max , 1 , MPI_DOUBLE , MPI_MAX , theDomain->theComm );
+
+      //if(theDomain->rank==0 && fabs(t/1.6e-4-1.)<.2) 
+         //printf("CHECK0: marker=%.4e\n",mrk_max);    
+ 
       
       for( k=k0 ; k<k1 ; ++k ){
          for( j=j0 ; j<j1 ; ++j ){
@@ -132,57 +115,36 @@ void set_W( struct domain * theDomain , int reset ){
                if( theDomain->theParList.Num_y != 1 ) ijk += (Nx+2*Ng)*j;
                if( theDomain->theParList.Num_z != 1 ) ijk += (Nx+2*Ng)*(Ny+2*Ng)*k;
                struct cell * c = theDomain->theCells+ijk;
-               pv = marker( c, fastdim, Cs[fastdim] );
-               r = fabs(c->xi[fastdim]-Cs[fastdim]*L0s[fastdim]);
-               if( pv>eps*pv_fast && r>r_fast ){
-                  r_fast   = r;
-                  v_fast   = c->prim[UU1+fastdim];
-                  r_perp   = c->xi[fastdim+1];
-                  //if(r<rshock*0.) v_fast = 0.;
+               for( dim=0 ; dim<1 ; ++dim ){
+                  v_local = fabs(c->prim[UU1+dim]);
+                  mrk = marker( c, dim, Cs[dim] );
+                  if( mrk>eps*mrk_max && v_local>v_max ){
+                     v_max = v_local;
+                     k_st = k;
+                     dist_max = fabs(c->xi[dim]-Ls[dim]);
+                  }   
                }
             }
          }
       }
 
-      /*
-      struct { double value; int index; } maxv;
-      maxv.value = r_fast;
-      maxv.index = theDomain->rank;
-      MPI_Allreduce( MPI_IN_PLACE , &maxv , 1 , MPI_DOUBLE_INT , MPI_MAXLOC , theDomain->theComm );
-      if(fabs(t/3.16e-2-1.)<1.  && theDomain->rank!=10){ 
-         MPI_Barrier(theDomain->theComm);
-         printf("CHECK1: t=%.4e, v_fast=%.4e, r_fast=%.4e, r_perp=%.4e, rshock=%.4e\n",t,v_fast,r_fast,r_perp,rshock);
-      }
-      MPI_Bcast( &v_fast ,  1 , MPI_DOUBLE , maxv.index , theDomain->theComm );
-      if(fabs(t/3.16e-2-1.)<1.  && theDomain->rank!=10){
-         MPI_Barrier(theDomain->theComm); 
-         printf("CHECK2: t=%.4e, v_fast=%.4e, r_fast=%.4e, r_perp=%.4e, rshock=%.4e\n",t,v_fast,r_fast,r_perp,rshock);
-      }
-      r_fast = maxv.value;
-      if(fabs(t/3.16e-2-1.)<1.  && theDomain->rank!=10){
-         MPI_Barrier(theDomain->theComm);
-         printf("CHECK3: t=%.4e, v_fast=%.4e, r_fast=%.4e, r_perp=%.4e, rshock=%.4e\n",t,v_fast,r_fast,r_perp,rshock);
-      }
-      v_fast *= W_cutoff(r_fast, rshock, Ls[fastdim]);
-      if(fabs(t/3.16e-2-1.)<1.  && theDomain->rank!=10){
-         MPI_Barrier(theDomain->theComm);
-         printf("CHECK4: t=%.4e, v_fast=%.4e, r_fast=%.4e, r_perp=%.4e, rshock=%.4e\n",t,v_fast,r_fast,r_perp,rshock);
-      }
-      */
+            
+      struct { double value; int index; } maxval;
+      maxval.value = v_max;
+      maxval.index = theDomain->rank;
+      MPI_Allreduce( MPI_IN_PLACE , &maxval , 1 , MPI_DOUBLE_INT , MPI_MAXLOC , theDomain->theComm );
+      MPI_Bcast( &dist_max , 1 , MPI_DOUBLE , maxval.index , theDomain->theComm );
 
-      struct { double value; int index; } maxv;
-      maxv.value = r_fast;
-      maxv.index = theDomain->rank;
-      MPI_Allreduce( MPI_IN_PLACE , &maxv , 1 , MPI_DOUBLE_INT , MPI_MAXLOC , theDomain->theComm );
-      MPI_Bcast( &v_fast ,  1 , MPI_DOUBLE , maxv.index , theDomain->theComm );
-      r_fast = maxv.value;
-      v_fast *= W_cutoff(r_fast, rshock, Ls[fastdim]);
-      
+      if(theDomain->rank==0 && fabs(t/1e-3-1.)<.2)
+         printf("CHECK1: v_fast = %e, r_fast=%e, k_t=%i\n ", maxval.value, dist_max, k_st);
       
 
-
+      //maxval.value *= (tanh((dist_max-shock_pos*Ls[0])/0.01)+1.2)*0.45*pow(dist_max/shock_pos/Ls[0],0.9);
+      //maxval.value *= 1.+log(dist_max/shock_pos/Ls[0])/log(1./shock_pos);
+      //if(maxval.value<0.) maxval.value = 0.;
       double W_local = 0.;
-      if(r_fast!=0) W_local = fabs( v_fast/r_fast );
+      if(dist_max!=0.) W_local = maxval.value/dist_max;
+      MPI_Allreduce( MPI_IN_PLACE , &W_local , 1 , MPI_DOUBLE , MPI_MAX , theDomain->theComm );
       theDomain->W = W_local;
    }
 
@@ -252,16 +214,3 @@ void regrid( struct domain * theDomain , double dt ){
    }
 
 }
-
-/*
-double clip_v( double L , double L0 , double x ){
-   double L_SP = shock_pos*L + (1.-shock_pos)*L0;
-   return (1.+log(x/L_SP))/log(L/L_SP);
-}
-
-void clip_r( double L , double L0 , double * x ){
-   if( *x>L0+shock_pos*L ) *x = L0+shock_pos*L;
-   //if( *x>L0+shock_pos*L/2. ) *x = L0+shock_pos*L/2.;
-   //if( *x<L0-shock_pos*L/2. ) *x = L0-shock_pos*L/2.;
-}
-*/
