@@ -91,7 +91,9 @@ void initial( double * prim , double * xi , double t , bool debug ){
 
    double x, y, z;
    double vx, vy, vz, vr, vcyl;
-   int i, j, minIndex_i, minIndex_j;
+   int i, j;
+   int minIndex_i = 0;
+   int minIndex_j = 0;
    double dist2;
    double minDist2 = 1.0e100;
    double rhoRead;
