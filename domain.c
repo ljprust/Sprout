@@ -31,7 +31,7 @@ int getN0( int , int , int );
 
 void setupCells( struct domain * theDomain ){
 
-   bool debug;
+   bool debug = false;
 
    int restart_flag = theDomain->theParList.restart_flag;
    if( restart_flag ) restart( theDomain );
@@ -50,7 +50,7 @@ void setupCells( struct domain * theDomain ){
    for( k=0 ; k<Nz ; ++k ){
       for( j=0 ; j<Ny ; ++j ){
          for( i=0 ; i<Nx ; ++i ){
-            bool debug = i==0 && j==0 && k==0;
+            //bool debug = i==0 && j==0 && k==0;
             ijk  = i+Ng;
             if( theDomain->theParList.Num_y != 1 ) ijk += (Nx+2*Ng)*(j+Ng);
             if( theDomain->theParList.Num_z != 1 ) ijk += (Nx+2*Ng)*(Ny+2*Ng)*(k+Ng);
