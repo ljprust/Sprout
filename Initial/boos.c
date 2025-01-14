@@ -25,6 +25,7 @@ static bool   quadrant = false;
 static double vxInput[XINPUT][ZINPUT];
 static double vzInput[XINPUT][ZINPUT];
 static double rhoInput[XINPUT][ZINPUT];
+static double HeInput[XINPUT][ZINPUT];
 static double NInput[XINPUT][ZINPUT];
 static double OInput[XINPUT][ZINPUT];
 static double SiInput[XINPUT][ZINPUT];
@@ -61,6 +62,7 @@ void setICParams( struct domain * theDomain ){
    FILE *vxInputFile;
    FILE *vzInputFile;
    FILE *rhoInputFile;
+   FILE *HeInputFile;
    FILE *NInputFile;
    FILE *OInputFile;
    FILE *SiInputFile;
@@ -69,6 +71,7 @@ void setICParams( struct domain * theDomain ){
    char filename_vx[256];
    char filename_vz[256];
    char filename_rho[256];
+   char filename_he[256];
    char filename_n[256];
    char filename_o[256];
    char filename_si[256];
@@ -77,6 +80,7 @@ void setICParams( struct domain * theDomain ){
    sprintf(filename_vx,  "sproutinput_vx.txt");
    sprintf(filename_vz,  "sproutinput_vz.txt");
    sprintf(filename_rho, "sproutinput_rho.txt");
+   sprintf(filename_he,  "sproutinput_he.txt");
    sprintf(filename_n,   "sproutinput_n.txt");
    sprintf(filename_o,   "sproutinput_o.txt");
    sprintf(filename_si,  "sproutinput_si.txt");
@@ -86,6 +90,7 @@ void setICParams( struct domain * theDomain ){
    //printf("opened %s\n", filename_vx);
    vzInputFile  = fopen(filename_vz,"r");
    rhoInputFile = fopen(filename_rho,"r");
+   HeInputFile  = fopen(filename_he,"r");
    NInputFile   = fopen(filename_n,"r");
    OInputFile   = fopen(filename_o,"r");
    SiInputFile  = fopen(filename_si,"r");
@@ -97,6 +102,7 @@ void setICParams( struct domain * theDomain ){
          fscanf( vxInputFile,  "%lf", &vxInput[i][j]  );
          fscanf( vzInputFile,  "%lf", &vzInput[i][j]  );
          fscanf( rhoInputFile, "%lf", &rhoInput[i][j] );
+         fscanf( HeInputFile,  "%lf", &HeInput[i][j]  );
          fscanf( NInputFile,   "%lf", &NInput[i][j]   );
          fscanf( OInputFile,   "%lf", &OInput[i][j]   );
          fscanf( SiInputFile,  "%lf", &SiInput[i][j]  );
@@ -107,6 +113,7 @@ void setICParams( struct domain * theDomain ){
    fclose(vxInputFile);
    fclose(vzInputFile);
    fclose(rhoInputFile);
+   fclose(HeInputFile);
    fclose(NInputFile);
    fclose(OInputFile);
    fclose(SiInputFile);
@@ -123,7 +130,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    int minIndex_j = 0;
    double dist2;
    double minDist2 = 1.0e100;
-   double rhoRead, NRead, ORead, SiRead, FeRead;
+   double rhoRead, HeRead, NRead, ORead, SiRead, FeRead;
    //bool isAtmosphere = false;
    double scaleFactor;
 
@@ -171,6 +178,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    //}
 
    // set abundances to those of nearest neighbor
+   HeRead = HeInput[minIndex_i][minIndex_j];
    NRead  = NInput[minIndex_i][minIndex_j];
    ORead  = OInput[minIndex_i][minIndex_j];
    SiRead = SiInput[minIndex_i][minIndex_j];
@@ -190,6 +198,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[UU2] = vy;
       prim[UU3] = vz;
       prim[XXX] = 1.0; // tracks ejecta fraction
+      prim[TRACER_HE] = HeRead;
       prim[TRACER_N]  = NRead;
       prim[TRACER_O]  = ORead;
       prim[TRACER_SI] = SiRead;
@@ -200,6 +209,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[UU2] = 0.0;
       prim[UU3] = 0.0;
       prim[XXX] = 0.0;
+      prim[TRACER_HE] = 0.0;
       prim[TRACER_N]  = 0.0;
       prim[TRACER_O]  = 0.0;
       prim[TRACER_SI] = 0.0;
