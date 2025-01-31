@@ -1,5 +1,7 @@
 #include "../defs.h"
 
+int set_accuracy(void);
+
 void prim2cons( double * , double * , double * , double );
 void flux( double * , double * , double * , double * );
 void vel( double * , double * , double * , double * , double * , double * );
@@ -55,8 +57,8 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
 
    int q;
    for( q=0 ; q<NUM_Q ; ++q ){
-      primL[q] = cL->prim[q] + .5 * (cL->gradx[q]*dx*n[0] + cL->grady[q]*dy*n[1] + cL->gradz[q]*dz*n[2]);
-      primR[q] = cR->prim[q] - .5 * (cR->gradx[q]*dx*n[0] + cR->grady[q]*dy*n[1] + cR->gradz[q]*dz*n[2]);
+      primL[q] = cL->prim[q] + .5 * (cL->gradx[q]*dx*n[0] + cL->grady[q]*dy*n[1] + cL->gradz[q]*dz*n[2]) + (cL->pblax[q]*n[0] + cL->pblay[q]*n[1] + cL->pblaz[q]*n[2]);
+      primR[q] = cR->prim[q] - .5 * (cR->gradx[q]*dx*n[0] + cR->grady[q]*dy*n[1] + cR->gradz[q]*dz*n[2]) + (cL->pblax[q]*n[0] + cL->pblay[q]*n[1] + cL->pblaz[q]*n[2]);
    }
 
    double Sl,Sr,Ss;
@@ -76,11 +78,11 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
    get_flux_coefficients( no_of_dims , first_step , last_step , W , dt , &C_F , &C_U );
 
    double Mach_L, Mach_R, Mach_local, Mach_limit;
-   Mach_L = fabs( (cL->prim[UU1+theDIM]-wn)/sqrt(5./3.*cL->prim[PPP]/cL->prim[RHO]) );
+   Mach_L = fabs( (cL->prim[UU1+theDIM]+wn)/sqrt(5./3.*cL->prim[PPP]/cL->prim[RHO]) );
    Mach_R = fabs( (cR->prim[UU1+theDIM]-wn)/sqrt(5./3.*cR->prim[PPP]/cR->prim[RHO]) );
    Mach_local = Mach_L;
    if(Mach_R>Mach_L) Mach_local = Mach_R;
-   Mach_limit = 0.5;
+   Mach_limit = 0.1;
 
    double phi = 1.0;
    if( Mach_local<Mach_limit ) phi = sin(Mach_local/Mach_limit*M_PI/2.);
@@ -89,14 +91,14 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
    double Sr_LM = Sr*phi;
 
 
-   if( wn < Sl_LM ){
+   if( wn < Sl ){
       flux( primL , Fl , xl , n );
       prim2cons( primL , Ul , xl , 1.0 );
 
       for( q=0 ; q<NUM_Q ; ++q ){
          Flux[q] = C_F*Fl[q] - C_U*wn*Ul[q];
       }
-   }else if( wn > Sr_LM ){
+   }else if( wn > Sr ){
       flux( primR , Fr , xr , n );
       prim2cons( primR , Ur , xr , 1.0 );
 

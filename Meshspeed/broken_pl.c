@@ -1,18 +1,20 @@
 
 #include "../defs.h"
 
-static double x_cen = 0.0;
-static double y_cen = 0.0;
-static double z_cen = 0.0;
-static double t_min = 0.0;
-static double d     = 0.0;
+static double x_cen  = 0.0;
+static double y_cen  = 0.0;
+static double z_cen  = 0.0;
+static double t_min  = 0.0;
+static double eta_on = 0.0;
+static double d      = 0.0;
 
 void setMeshMotionParams( struct domain * theDomain ){
 
-   x_cen = theDomain->theParList.MM_x0;
-   y_cen = theDomain->theParList.MM_y0;
-   z_cen = theDomain->theParList.MM_z0;
-   t_min = theDomain->t_init;
+   x_cen  = theDomain->theParList.MM_x0 * theDomain->theParList.Lx;
+   y_cen  = theDomain->theParList.MM_y0 * theDomain->theParList.Ly;
+   z_cen  = theDomain->theParList.MM_z0 * theDomain->theParList.Lz;
+   t_min  = theDomain->t_init;
+   eta_on = theDomain->theParList.eta_on; 
    if( theDomain->theParList.Num_x!=1 ) ++d;
    if( theDomain->theParList.Num_y!=1 ) ++d;
    if( theDomain->theParList.Num_z!=1 ) ++d;
@@ -21,15 +23,78 @@ void setMeshMotionParams( struct domain * theDomain ){
 void set_W( struct domain * theDomain , int reset ){
    
    double t = theDomain->t;
-   
-   if( t>t_min*1.001 && t<t_min*1e4 )
-      theDomain->W = .5/t;
+   if( t>t_min*eta_on && t<t_min*1e3 )
+      theDomain->W = 1.8/t;
+   else if( t>t_min*1e3 && t<t_min*1e4 )
+      theDomain->W = 1.18/t;
    else
       theDomain->W = 0.;
 
-   /*//PWN problem, t0 = 1e-4, l0 = 2e-2
-   if( t>t_min*6.0 && t<t_min*1e4 )
-      theDomain->W = 1.25/t;
+
+   //exponential ejecta, eta_on=1.7, L=2e-3
+   /*if( t>t_min*eta_on && t<t_min*2.5 )
+      theDomain->W = 0.95/t;
+   else if( t>t_min*2.5 && t<t_min*5. )
+      theDomain->W = 0.80/t;
+   else if( t>t_min*5. && t<t_min*3e1 )
+      theDomain->W = 0.85/t;
+   else if( t>t_min*3e1 && t<t_min*8e1 )
+      theDomain->W = 0.80/t;
+   else if( t>t_min*8e1 && t<t_min*1e2 )
+      theDomain->W = 0.77/t;
+   else if( t>t_min*1e2 && t<t_min*3e2 )
+      theDomain->W = 0.76/t;
+   else if( t>t_min*3e2 && t<t_min*7e2 )
+      theDomain->W = 0.72/t;
+   else if( t>t_min*7e2 && t<t_min*1e3 )
+      theDomain->W = 0.68/t;
+   else if( t>t_min*1e3 && t<t_min*3e3 )
+      theDomain->W = 0.64/t;
+   else if( t>t_min*3e3 && t<t_min*5e3 )
+      theDomain->W = 0.56/t;
+   else if( t>t_min*5e3 && t<t_min*8e3 )
+      theDomain->W = 0.52/t;
+   else if( t>t_min*8e3 && t<t_min*1e4 )
+      theDomain->W = 0.50/t;
+   else
+      theDomain->W = 0.;*/
+
+
+   //Kooshball
+   /*if( t>t_min*eta_on && t<t_min*5.0 )
+      theDomain->W = 1.0/t;
+   else if( t>t_min*5.0 && t<t_min*1e1 )
+      theDomain->W = 0.9/t;
+   else if( t>t_min*1e1 && t<t_min*1e2 )
+      theDomain->W = 0.9/t;
+   else if( t>t_min*1e2 && t<t_min*2e2 )
+      theDomain->W = 0.85/t;
+   else if( t>t_min*2e2 && t<t_min*1e3 )
+      theDomain->W = 1.0/t;
+   else if( t>t_min*1e3 && t<t_min*3e3 )
+      theDomain->W = 1.1/t;
+   else if( t>t_min*3e3 && t<t_min*1e5 )
+      theDomain->W = 1.0/t;
+   else
+      theDomain->W = 0.;*/
+   
+   //PWN problem, m = 0, t0 = 1e-4, l0 = 2e-2, eta_on = 1.7
+   /*if( t>t_min*eta_on && t<t_min*1e3 )
+      theDomain->W = 1.33/t;
+   else if( t>t_min*1e3 && t<t_min*1e4 )
+      theDomain->W = 1.18/t;
+   else
+      theDomain->W = 0.;*/
+
+   //PWN problem, m = 2, t0 = 1e-4, l0 = 2e-2, eta_on = 1.8
+   /*if( t>t_min*eta_on && t<t_min*1e1 )
+      theDomain->W = 1.45/t;
+   else if( t>t_min*1e1 && t<t_min*1e2 )
+      theDomain->W = 4./3./t;
+   else if( t>t_min*1e2 && t<t_min*1e3 )
+      theDomain->W = 4./3./t;
+   else if( t>t_min*1e3 && t<t_min*1e4 )
+      theDomain->W = 4./3./t;
    else
       theDomain->W = 0.;*/
 

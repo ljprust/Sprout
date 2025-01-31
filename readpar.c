@@ -73,7 +73,7 @@ int read_par_file( struct domain * theDomain ){
          err += readvar( pfile , "CFL"             , VAR_DOUB , &(theList->CFL)             );
          err += readvar( pfile , "PLM"             , VAR_DOUB , &(theList->PLM)             );
          err += readvar( pfile , "W0"              , VAR_DOUB , &(theList->W0)              );
-         err += readvar( pfile , "W_frac"          , VAR_DOUB , &(theList->W_frac)          );
+         err += readvar( pfile , "eta_on"          , VAR_DOUB , &(theList->eta_on)          );
          err += readvar( pfile , "Mesh_motion_x0"  , VAR_DOUB , &(theList->MM_x0)           );
          err += readvar( pfile , "Mesh_motion_y0"  , VAR_DOUB , &(theList->MM_y0)           );
          err += readvar( pfile , "Mesh_motion_z0"  , VAR_DOUB , &(theList->MM_z0)           );
@@ -83,13 +83,13 @@ int read_par_file( struct domain * theDomain ){
          err += readvar( pfile , "Gravity_Switch"  , VAR_INT  , &(theList->Gravity_Switch)  );
          err += readvar( pfile , "Central_Mass"    , VAR_DOUB , &(theList->Central_Mass)    );
          err += readvar( pfile , "Grav_G"          , VAR_DOUB , &(theList->Grav_G)          );
-         err += readvar( pfile , "Bondi_Mdot"      , VAR_DOUB , &(theList->Mdot)            );
-         err += readvar( pfile , "Bondi_P_coeff"   , VAR_DOUB , &(theList->eta_P)           );
          err += readvar( pfile , "Restart"         , VAR_INT  , &(theList->restart_flag)    );
          err += readvar( pfile , "Nozzle_Switch"   , VAR_INT  , &(theList->Nozzle_Switch)   );
          err += readvar( pfile , "Nozzle_x0"       , VAR_DOUB , &(theList->Nozzle_x0)       );
          err += readvar( pfile , "Nozzle_y0"       , VAR_DOUB , &(theList->Nozzle_y0)       );
          err += readvar( pfile , "Nozzle_z0"       , VAR_DOUB , &(theList->Nozzle_z0)       );
+         err += readvar( pfile , "Nozzle_Power"    , VAR_DOUB , &(theList->Nozzle_pow)      );
+         err += readvar( pfile , "Nozzle_Speed"    , VAR_DOUB , &(theList->Nozzle_v)        );
       }
       MPI_Barrier(MPI_COMM_WORLD);
    }

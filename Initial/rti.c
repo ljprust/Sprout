@@ -32,7 +32,7 @@ void initial( double * prim , double * xi , double t ){
    }else{
       prim[RHO] = 2.0;
    }
-   prim[PPP] = 5.0 + g_acc * prim[RHO] * (y-y_interface);
+   prim[PPP] = 2.5 + g_acc * prim[RHO] * (y-y_interface);
    prim[UU1] = 0.0;
    prim[UU2] = w0 * f(x,y);
    prim[UU3] = 0.0;
