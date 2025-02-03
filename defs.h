@@ -1,6 +1,12 @@
-enum{RHO,PPP,UU1,UU2,UU3,XXX,TRACER_HE,TRACER_N,TRACER_O,TRACER_SI,TRACER_FE};
+enum{RHO,PPP,UU1,UU2,UU3,XXX,XX2,XX3,XX4,XX5,XX6};
 enum{DEN,TAU,SS1,SS2,SS3};
 
+// XXX = ejecta fraction
+// XX2 = He
+// XX3 = N
+// XX4 = O
+// XX5 = Si
+// XX6 = Fe
 
 #include <mpi.h>
 #include <stdio.h>
