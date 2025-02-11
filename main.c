@@ -53,7 +53,7 @@ int main( int argc , char * argv[] ){
    boundary( &theDomain );
    
    double dtf;
-   
+     
    while( !(theDomain.final_step) ){
 
       double dt = getmindt( &theDomain );

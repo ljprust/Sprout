@@ -1,20 +1,18 @@
 
 #include "../defs.h"
 
-static double x_cen  = 0.0;
-static double y_cen  = 0.0;
-static double z_cen  = 0.0;
-static double t_min  = 0.0;
-static double eta_on = 0.0;
-static double d      = 0.0;
+static double x_cen = 0.0;
+static double y_cen = 0.0;
+static double z_cen = 0.0;
+static double t_min = 0.0;
+static double d     = 0.0;
 
 void setMeshMotionParams( struct domain * theDomain ){
 
-   x_cen = theDomain->theParList.MM_x0 * theDomain->theParList.Lx;
-   y_cen = theDomain->theParList.MM_y0 * theDomain->theParList.Ly;
-   z_cen = theDomain->theParList.MM_z0 * theDomain->theParList.Lz;
+   x_cen = theDomain->theParList.MM_x0;
+   y_cen = theDomain->theParList.MM_y0;
+   z_cen = theDomain->theParList.MM_z0;
    t_min = theDomain->t_init;
-   eta_on = theDomain->theParList.eta_on;
    if( theDomain->theParList.Num_x!=1 ) ++d;
    if( theDomain->theParList.Num_y!=1 ) ++d;
    if( theDomain->theParList.Num_z!=1 ) ++d;
@@ -24,9 +22,9 @@ void set_W( struct domain * theDomain , int reset ){
    
    double t = theDomain->t;
    double n = 10.;
-   double s = 0.;
+   double s = 2.;
    double m = (n-d)/(n-s);
-   if( t>t_min*eta_on && t<t_min*1e12 )  //2.3 for 2D s0n9, 2.0 for s2n9
+   if( t>t_min*2.1 && t<t_min*1e12 )  //2.3 for 2D s0n9, 2.0 for s2n9
       theDomain->W = m/t;
    else
       theDomain->W = 0.;

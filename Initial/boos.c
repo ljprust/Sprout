@@ -198,22 +198,22 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[UU2] = vy;
       prim[UU3] = vz;
       prim[XXX] = 1.0; // tracks ejecta fraction
-      prim[XX2] = HeRead;
-      prim[XX3] = NRead;
-      prim[XX4] = ORead;
-      prim[XX5] = SiRead;
-      prim[XX6] = FeRead;
+      prim[TRACER_HE] = HeRead;
+      prim[TRACER_N]  = NRead;
+      prim[TRACER_O]  = ORead;
+      prim[TRACER_SI] = SiRead;
+      prim[TRACER_FE] = FeRead;
    } else {
       prim[RHO] = rhoISM;
       prim[UU1] = 0.0;
       prim[UU2] = 0.0;
       prim[UU3] = 0.0;
       prim[XXX] = 0.0;
-      prim[XX2] = 0.0;
-      prim[XX3] = 0.0;
-      prim[XX4] = 0.0;
-      prim[XX5] = 0.0;
-      prim[XX6] = 0.0;
+      prim[TRACER_HE] = 0.0;
+      prim[TRACER_N]  = 0.0;
+      prim[TRACER_O]  = 0.0;
+      prim[TRACER_SI] = 0.0;
+      prim[TRACER_FE] = 0.0;
    }
 
    // set pressure to small fraction of ram pressure

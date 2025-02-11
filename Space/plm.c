@@ -1,10 +1,6 @@
 
 #include "../defs.h"
 
-int set_accuracy(void){
-   return 2;
-}
-
 double minmod( double x , double y , double z ){
    double a = x;
    if( x*y < 0.0 ) a = 0.0;

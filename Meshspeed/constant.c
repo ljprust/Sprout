@@ -7,9 +7,9 @@ static double z_cen = 0.0;
 
 void setMeshMotionParams( struct domain * theDomain ){
 
-   x_cen = theDomain->theParList.MM_x0 * theDomain->theParList.Lx;
-   y_cen = theDomain->theParList.MM_y0 * theDomain->theParList.Ly;
-   z_cen = theDomain->theParList.MM_z0 * theDomain->theParList.Lz;
+   x_cen = theDomain->theParList.MM_x0;
+   y_cen = theDomain->theParList.MM_y0;
+   z_cen = theDomain->theParList.MM_z0;
     
 }
 

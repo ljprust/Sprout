@@ -18,16 +18,16 @@ void setICParams( struct domain * theDomain ){
    if( theDomain->theParList.Num_x!=1 ) ++d;
    if( theDomain->theParList.Num_y!=1 ) ++d;
    if( theDomain->theParList.Num_z!=1 ) ++d;
-   x_cen = theDomain->theParList.MM_x0 * theDomain->theParList.Lx;
-   y_cen = theDomain->theParList.MM_y0 * theDomain->theParList.Ly;
-   z_cen = theDomain->theParList.MM_z0 * theDomain->theParList.Lz;
+   x_cen = theDomain->theParList.MM_x0;
+   y_cen = theDomain->theParList.MM_y0;
+   z_cen = theDomain->theParList.MM_z0;
 }
 
 
 void initial( double * prim , double * xi , double t ){
 
-   double n = 9.0;
-   double s = 0.0;
+   double n = 10.0;
+   double s = 2.0;
    double A = 1e-2;
    double k = 10.5;
 

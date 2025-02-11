@@ -127,8 +127,8 @@ void boundary1D_almost_periodic( struct domain * theDomain , int theDIM ){
                struct cell * crecv = theCells+ijk_recv;
                dl = (double)(n[0]*(i-Ng))*dx + (double)(n[1]*(j-Ng))*dy + (double)(n[2]*(k-Ng))*dz;
                set_coords( crecv , csend , dl , theDIM );
-               //initial( buffer.prim , crecv->xi , t );
-               //selective_copy( crecv , &buffer );
+               initial( buffer.prim , crecv->xi , t );
+               selective_copy( crecv , &buffer );
                prim2cons( crecv->prim , crecv->cons , crecv->xi , dx*dy*dz );
             }
          }

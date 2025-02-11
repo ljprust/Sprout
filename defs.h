@@ -1,12 +1,6 @@
-enum{RHO,PPP,UU1,UU2,UU3,XXX,XX2,XX3,XX4,XX5,XX6};
+enum{RHO,PPP,UU1,UU2,UU3,XXX,TRACER_HE,TRACER_N,TRACER_O,TRACER_SI,TRACER_FE};
 enum{DEN,TAU,SS1,SS2,SS3};
 
-// XXX = ejecta fraction
-// XX2 = He
-// XX3 = N
-// XX4 = O
-// XX5 = Si
-// XX6 = Fe
 
 #include <mpi.h>
 #include <stdio.h>
@@ -32,7 +26,7 @@ struct param_list{
    double CFL, PLM;
    double Density_Floor, Pressure_Floor;
 
-   double W0, eta_on;
+   double W0, W_frac;
    double MM_x0, MM_y0, MM_z0;
 
    double Adiabatic_Index;
@@ -40,7 +34,8 @@ struct param_list{
    double Grav_G , Central_Mass;
    int Nozzle_Switch;
    double Nozzle_x0, Nozzle_y0, Nozzle_z0;
-   double Nozzle_pow, Nozzle_v;
+
+   double Mdot , eta_P;
 
    int restart_flag;
 };
@@ -52,10 +47,6 @@ struct cell{
    double gradx[NUM_Q];
    double grady[NUM_Q];
    double gradz[NUM_Q];
-   double pblax[NUM_Q];
-   double pblay[NUM_Q];
-   double pblaz[NUM_Q];
-
    double xi[3];
    double RKxi[3];
 };

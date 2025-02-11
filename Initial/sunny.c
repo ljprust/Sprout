@@ -25,7 +25,6 @@ static double kasenA = 0.0;
 static double Lz     = 0.0;
 static bool   readIC = false;
 static bool   quadrant = false;
-static double bowshockscale = 0.0;
 static double xInput[NTHETAINPUT][NRADINPUT];
 static double yInput[NTHETAINPUT][NRADINPUT];
 static double rhoInput[NTHETAINPUT][NRADINPUT];
@@ -52,10 +51,9 @@ void setICParams( struct domain * theDomain ){
 
    // Kasen fit parameters
    kasen  = true;
-   bowshockscale = 0.55;
    fh     = 0.1;
    mpower = 8.0;
-   thetah = 30.0*bowshockscale;
+   thetah = 30.0;
    thetap = 15.0;
    kasenA = 1.8;
 
