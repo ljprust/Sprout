@@ -38,6 +38,8 @@ struct param_list{
    double Mdot , eta_P;
 
    int restart_flag;
+
+   double t_input, rho_ISM, v_max, Ram_Pressure_Factor;
 };
 
 struct cell{

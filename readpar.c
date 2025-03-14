@@ -90,6 +90,10 @@ int read_par_file( struct domain * theDomain ){
          err += readvar( pfile , "Nozzle_x0"       , VAR_DOUB , &(theList->Nozzle_x0)       );
          err += readvar( pfile , "Nozzle_y0"       , VAR_DOUB , &(theList->Nozzle_y0)       );
          err += readvar( pfile , "Nozzle_z0"       , VAR_DOUB , &(theList->Nozzle_z0)       );
+	 err += readvar( pfile , "t_input"         , VAR_DOUB , &(theList->t_input)         );
+	 err += readvar( pfile , "rho_ISM"         , VAR_DOUB , &(theList->rho_ISM)         );
+	 err += readvar( pfile , "v_max"           , VAR_DOUB , &(theList->v_max)           );
+	 err += readvar( pfile , "Ram_Pressure_Factor", VAR_DOUB , &(theList->Ram_Pressure_Factor)         );
       }
       MPI_Barrier(MPI_COMM_WORLD);
    }

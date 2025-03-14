@@ -10,15 +10,9 @@
 
 static double vmax   = 0.0;
 static double rhoISM = 0.0;
-static double Eej    = 0.0;
-static double Mej    = 0.0;
-static double vwind  = 0.0;
-static double Mdot   = 0.0;
 static double t0     = 0.0;
 static double tinput = 0.0;
-static double Msun   = 0.0;
 static double yr     = 0.0;
-static double day    = 0.0;
 static double Lz     = 0.0;
 static double ramPressureFactor = 0.0;
 static bool   quadrant = false;
@@ -33,26 +27,21 @@ static double FeInput[XINPUT][ZINPUT];
 
 void setICParams( struct domain * theDomain ){
    // constants
-   Msun   = 2.0e33;
    yr     = 365.25*24.0*3600.0; // sec
-   day    = 24.0*3600.0;
+
+   // domain size
    Lz     = theDomain->theParList.Lz;
 
    // ejecta parameters
-   Eej    = 1.0e51;
-   Mej    = 1.0*Msun;
-   t0     = 10.0*yr;
-   vmax   = 5.0e9; // 2.53e9;
-   ramPressureFactor = 1.0e-5;
+   t0     = theDomain->theParList.t_min;
+   vmax   = theDomain->theParList.v_max;
+   ramPressureFactor = theDomain->theParList.Ram_Pressure_Factor;
 
    // CSM parameters
-   vwind  = 10.0e5;
-   Mdot   = 0.0; // 4.0e-5*Msun/yr;
-   rhoISM = 6.31e-25; // 1.7e-24; (constant)
+   rhoISM = theDomain->theParList.rho_ISM;
 
    // epoch of intial data
-   tinput = 53.059; // m100_70
-   //tinput = 66.74676; // m100_70_nosecdet
+   tinput = theDomain->theParList.t_input;
 
    // model a quadrant of the cube or just an octant
    quadrant = true;
