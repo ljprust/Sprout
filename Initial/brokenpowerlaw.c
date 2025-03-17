@@ -13,9 +13,10 @@ static double Msun   = 0.0;
 static double yr     = 0.0;
 static double day    = 0.0;
 static double Lz     = 0.0;
-static bool   quadrant = false;
+static int    quadrant = 0;
 static double nPower = 0.0;
 static double deltaPower = 0.0;
+static double ramPressureFactor = 0.0;
 
 void setICParams( struct domain * theDomain ){
    // constants
@@ -25,39 +26,39 @@ void setICParams( struct domain * theDomain ){
    Lz     = theDomain->theParList.Lz;
 
    // ejecta parameters
-   Eej    = 1.0e51;
-   Mej    = 2.5*Msun;
-   t0     = 100.0*day;
-   vmax   = 1.72e9;
+   Eej    = theDomain->theParList.E_ejecta;
+   Mej    = Msun * theDomain->theParList.M_ejecta;
+   t0     = theDomain->theParList.t_min;
+   vmax   = theDomain->theParList.v_max;
+   ramPressureFactor = theDomain->theParList.Ram_Pressure_Factor;
 
    // power laws
-   deltaPower = 1.1;
-   nPower     = 10.0;
+   deltaPower = theDomain->theParList.delta_power;
+   nPower     = theDomain->theParList.n_power;
 
    // CSM parameters
-   vwind  = 10.0e5;
-   Mdot   = 4.0e-5*Msun/yr;
+   vwind  = 1.0e5 * theDomain->theParList.v_wind;
+   Mdot   = Msun/yr * theDomain->theParList.Mdot_wind;
 
    // model a quadrant of the cube or just an octant
-   quadrant = true;
+   quadrant = theDomain->theParList.useQuadrant;
 }
 
 void initial( double * prim , double * xi , double t , bool debug ){
 
-   double x, y, z, r, r0, vr;
-   double K, vt, rt, kt, rhoprefactor, rhoOut, rhoIn;
+   double x, y, z, r, r0;
+   double K, vt, rt, rhoprefactor, rhoOut, rhoIn;
 
    x = xi[0];
    y = xi[1];
    z = xi[2];
 
-   if( quadrant ) {
+   if( quadrant>0 ) {
       z = z - Lz/2.0;
    }
 
    r = sqrt( x*x + y*y + z*z );
    r0 = vmax*t0;
-   vr = vmax*r/r0;
 
    K = (nPower-3.0)*(3.0-deltaPower)/4.0/3.14159/(nPower-deltaPower);
    vt = sqrt((nPower-5.0)*(5.0-deltaPower)/(nPower-3.0)/(3.0-deltaPower)*2.0*Eej/Mej);
@@ -86,5 +87,5 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[XXX] = 0.0;
    }
 
-   prim[PPP] = 1.0e-5*vmax*vmax*prim[RHO];
+   prim[PPP] = ramPressureFactor*vmax*vmax*prim[RHO];
 }

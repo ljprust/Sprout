@@ -39,7 +39,10 @@ struct param_list{
 
    int restart_flag;
 
-   double t_input, rho_ISM, v_max, Ram_Pressure_Factor;
+   double v_max, Ram_Pressure_Factor;
+   double M_ejecta, E_ejecta, delta_power, n_power;
+   double Mdot_wind, v_wind;
+   int useQuadrant;
 };
 
 struct cell{

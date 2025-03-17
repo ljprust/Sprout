@@ -90,10 +90,15 @@ int read_par_file( struct domain * theDomain ){
          err += readvar( pfile , "Nozzle_x0"       , VAR_DOUB , &(theList->Nozzle_x0)       );
          err += readvar( pfile , "Nozzle_y0"       , VAR_DOUB , &(theList->Nozzle_y0)       );
          err += readvar( pfile , "Nozzle_z0"       , VAR_DOUB , &(theList->Nozzle_z0)       );
-	 err += readvar( pfile , "t_input"         , VAR_DOUB , &(theList->t_input)         );
-	 err += readvar( pfile , "rho_ISM"         , VAR_DOUB , &(theList->rho_ISM)         );
 	 err += readvar( pfile , "v_max"           , VAR_DOUB , &(theList->v_max)           );
 	 err += readvar( pfile , "Ram_Pressure_Factor", VAR_DOUB , &(theList->Ram_Pressure_Factor)         );
+         err += readvar( pfile , "M_ejecta"        , VAR_DOUB , &(theList->M_ejecta)        );
+         err += readvar( pfile , "E_ejecta"        , VAR_DOUB , &(theList->E_ejecta)        );
+         err += readvar( pfile , "delta_power"     , VAR_DOUB , &(theList->delta_power)     );
+         err += readvar( pfile , "n_power"         , VAR_DOUB , &(theList->n_power)         );
+         err += readvar( pfile , "Mdot_wind"       , VAR_DOUB , &(theList->Mdot_wind)       );
+         err += readvar( pfile , "v_wind"          , VAR_DOUB , &(theList->v_wind)          );
+         err += readvar( pfile , "useQuadrant"     , VAR_INT  , &(theList->useQuadrant)     );
       }
       MPI_Barrier(MPI_COMM_WORLD);
    }
