@@ -50,7 +50,7 @@ void setICParams( struct domain * theDomain ){
    rhoISM = 6.31e-25; // 1.7e-24; (constant)
 
    // Kasen fit parameters
-   kasen  = true;
+   kasen  = false;
    fh     = 0.1;
    mpower = 8.0;
    thetah = 30.0;
@@ -191,12 +191,12 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[UU3] = 0.0;
       prim[XXX] = 0.0;
    }
-
+/*
    if( thetaDeg < 30.0 && vr < 2.0e8 ) {
       prim[YYY] = 1.0;
    } else {
       prim[YYY] = 0.0;
    }
-
+*/
    prim[PPP] = 1.0e-5*vmax*vmax*prim[RHO];
 }
