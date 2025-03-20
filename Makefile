@@ -3,11 +3,11 @@ RESTART   = h5in
 BOUNDARY  = cornermirror
 INITIAL   = brokenpowerlaw
 HYDRO     = euler
-RIEMANN   = hllc_upwind
+RIEMANN   = hllc
 GRAVITY   = slab
 NOZZLE    = wind
 SPACE     = plm
-TIMESTEP  = rk2
+TIMESTEP  = rk3
 MESHSPEED = follow_fastest
 OUTPUT    = h5out#_withghost
 
@@ -66,7 +66,7 @@ $(OUTPUT).o : Output/$(OUTPUT).c defs.h
 	$(CC) $(FLAGS) $(INC) -c Output/$(OUTPUT).c
 
 cube: $(OBJ) defs.h
-	$(CC) $(FLAGS) $(LIB) -o /home/ljprust/work/sprout/fiducial/cube $(OBJ) -lhdf5 -lm
+	$(CC) $(FLAGS) $(LIB) -o /home/ljprust/work/sprout/fiducial2/cube $(OBJ) -lhdf5 -lm
 
 clean:
 	rm -f *.o cube

@@ -17,6 +17,11 @@ static int    quadrant = 0;
 static double nPower = 0.0;
 static double deltaPower = 0.0;
 static double ramPressureFactor = 0.0;
+static double K = 0.0;
+static double rt = 0.0;
+static double vt = 0.0;
+static double r0 = 0.0;
+static double rhoprefactor = 0.0;
 
 void setICParams( struct domain * theDomain ){
    // constants
@@ -29,7 +34,7 @@ void setICParams( struct domain * theDomain ){
    Eej    = theDomain->theParList.E_ejecta;
    Mej    = Msun * theDomain->theParList.M_ejecta;
    t0     = theDomain->theParList.t_min;
-   vmax   = theDomain->theParList.v_max;
+   vmax   = 1.0e5 * theDomain->theParList.v_max;
    ramPressureFactor = theDomain->theParList.Ram_Pressure_Factor;
 
    // power laws
@@ -42,12 +47,20 @@ void setICParams( struct domain * theDomain ){
 
    // model a quadrant of the cube or just an octant
    quadrant = theDomain->theParList.useQuadrant;
+
+   r0 = vmax*t0;
+   K = (nPower-3.0)*(3.0-deltaPower)/4.0/3.14159/(nPower-deltaPower);
+   vt = sqrt((nPower-5.0)*(5.0-deltaPower)/(nPower-3.0)/(3.0-deltaPower)*2.0*Eej/Mej);
+   rt = vt*t0;
+   rhoprefactor = K*Mej/rt/rt/rt;
+
+   printf("t0 %5.3e vmax %5.3e r0 %5.3e K %5.3e vt %5.3e rt %5.3e\n",t0,vmax,r0,K,vt,rt);
 }
 
 void initial( double * prim , double * xi , double t , bool debug ){
 
-   double x, y, z, r, r0;
-   double K, vt, rt, rhoprefactor, rhoOut, rhoIn;
+   double x, y, z, r;
+   double rhoOut, rhoIn;
 
    x = xi[0];
    y = xi[1];
@@ -58,12 +71,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    }
 
    r = sqrt( x*x + y*y + z*z );
-   r0 = vmax*t0;
 
-   K = (nPower-3.0)*(3.0-deltaPower)/4.0/3.14159/(nPower-deltaPower);
-   vt = sqrt((nPower-5.0)*(5.0-deltaPower)/(nPower-3.0)/(3.0-deltaPower)*2.0*Eej/Mej);
-   rt = vt*t0;
-   rhoprefactor = K*Mej/rt/rt/rt;
    rhoOut = rhoprefactor*pow(r/rt,-nPower);
    rhoIn  = rhoprefactor*pow(r/rt,-deltaPower);
 
