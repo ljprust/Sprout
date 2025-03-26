@@ -24,6 +24,7 @@ static double NInput[XINPUT][ZINPUT];
 static double OInput[XINPUT][ZINPUT];
 static double SiInput[XINPUT][ZINPUT];
 static double FeInput[XINPUT][ZINPUT];
+static double SInput[XINPUT][ZINPUT];
 
 void setICParams( struct domain * theDomain ){
    // constants
@@ -56,6 +57,7 @@ void setICParams( struct domain * theDomain ){
    FILE *OInputFile;
    FILE *SiInputFile;
    FILE *FeInputFile;
+   FILE *SInputFile;
 
    char filename_vx[256];
    char filename_vz[256];
@@ -65,6 +67,7 @@ void setICParams( struct domain * theDomain ){
    char filename_o[256];
    char filename_si[256];
    char filename_fe[256];
+   char filename_s[256];
 
    sprintf(filename_vx,  "sproutinput_vx.txt");
    sprintf(filename_vz,  "sproutinput_vz.txt");
@@ -74,16 +77,17 @@ void setICParams( struct domain * theDomain ){
    sprintf(filename_o,   "sproutinput_o.txt");
    sprintf(filename_si,  "sproutinput_si.txt");
    sprintf(filename_fe,  "sproutinput_fe.txt");
+   sprintf(filename_s,   "sproutinput_s.txt");
 
-   vxInputFile  = fopen(filename_vx,"r");
-   //printf("opened %s\n", filename_vx);
-   vzInputFile  = fopen(filename_vz,"r");
+   vxInputFile  = fopen(filename_vx, "r");
+   vzInputFile  = fopen(filename_vz, "r");
    rhoInputFile = fopen(filename_rho,"r");
-   HeInputFile  = fopen(filename_he,"r");
-   NInputFile   = fopen(filename_n,"r");
-   OInputFile   = fopen(filename_o,"r");
-   SiInputFile  = fopen(filename_si,"r");
-   FeInputFile  = fopen(filename_fe,"r");
+   HeInputFile  = fopen(filename_he, "r");
+   NInputFile   = fopen(filename_n,  "r");
+   OInputFile   = fopen(filename_o,  "r");
+   SiInputFile  = fopen(filename_si, "r");
+   FeInputFile  = fopen(filename_fe, "r");
+   SInputFile   = fopen(filename_s,  "r");
 
    int i, j;
    for( i=0 ; i<XINPUT ; ++i ){
@@ -96,6 +100,7 @@ void setICParams( struct domain * theDomain ){
          fscanf( OInputFile,   "%lf", &OInput[i][j]   );
          fscanf( SiInputFile,  "%lf", &SiInput[i][j]  );
          fscanf( FeInputFile,  "%lf", &FeInput[i][j]  );
+	 fscanf( SInputFile,   "%lf", &SInput[i][j]   );
       }
    }
 
@@ -107,6 +112,7 @@ void setICParams( struct domain * theDomain ){
    fclose(OInputFile);
    fclose(SiInputFile);
    fclose(FeInputFile);
+   fclose(SInputFile);
    printf("Done reading input data, closed files\n");
 }
 
@@ -119,7 +125,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    int minIndex_j = 0;
    double dist2;
    double minDist2 = 1.0e100;
-   double rhoRead, HeRead, NRead, ORead, SiRead, FeRead;
+   double rhoRead, HeRead, NRead, ORead, SiRead, FeRead, SRead;
    //bool isAtmosphere = false;
    double scaleFactor;
 
@@ -172,6 +178,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    ORead  = OInput[minIndex_i][minIndex_j];
    SiRead = SiInput[minIndex_i][minIndex_j];
    FeRead = FeInput[minIndex_i][minIndex_j];
+   SRead  = SInput[minIndex_i][minIndex_j];
 
    // various debug messages
    //if ( debug || false ) {
@@ -192,6 +199,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[TRACER_O]  = ORead;
       prim[TRACER_SI] = SiRead;
       prim[TRACER_FE] = FeRead;
+      prim[TRACER_S]  = SRead;
    } else {
       prim[RHO] = rhoISM;
       prim[UU1] = 0.0;
@@ -203,6 +211,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[TRACER_O]  = 0.0;
       prim[TRACER_SI] = 0.0;
       prim[TRACER_FE] = 0.0;
+      prim[TRACER_S]  = 0.0;
    }
 
    // set pressure to small fraction of ram pressure
