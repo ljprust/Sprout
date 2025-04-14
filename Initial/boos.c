@@ -126,7 +126,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    double dist2;
    double minDist2 = 1.0e100;
    double rhoRead, HeRead, NRead, ORead, SiRead, FeRead, SRead;
-   //bool isAtmosphere = false;
+   bool isEjecta = false;
    double scaleFactor;
 
    // scale rho to current time
@@ -187,8 +187,13 @@ void initial( double * prim , double * xi , double t , bool debug ){
    //   printf("x y z minDist2 %5.3e %5.3e %5.3e %5.3e\n",x,y,z,minDist2);
    //}
 
+   if( rhoRead > rhoISM ) isEjecta = true;
+
+   // make sure ejecta doesn't touch +z boundary
+   if( quadrant && vz > 4.5e9 ) isEjecta = false;
+
    // define primitives
-   if( rhoRead > rhoISM ) {
+   if( isEjecta ) {
       prim[RHO] = rhoRead;
       prim[UU1] = vx;
       prim[UU2] = vy;
