@@ -148,29 +148,20 @@ void initial( double * prim , double * xi , double t , bool debug ){
    //vr = sqrt(vx*vx+vy*vy+vz*vz);
    vcyl = sqrt(vx*vx+vy*vy); // velocity in x-y plane
 
-   // ignore initial data with v > vmax
-   //isAtmosphere = vr > vmax;
-
-   // do a nearest neighbor search if we're within the ejecta
-   //if( !isAtmosphere ) {
-      for( i=0 ; i<XINPUT ; ++i ){
-         for( j=0 ; j<ZINPUT ; ++j ){
-            dist2 = ( vcyl - vxInput[i][j] ) * ( vcyl - vxInput[i][j] )
-                  + ( vz   - vzInput[i][j] ) * ( vz   - vzInput[i][j] );
-            if(dist2 < minDist2) {
-               minDist2 = dist2;
-               minIndex_i = i;
-               minIndex_j = j;
-            }
+   for( i=0 ; i<XINPUT ; ++i ){
+      for( j=0 ; j<ZINPUT ; ++j ){
+         dist2 = ( vcyl - vxInput[i][j] ) * ( vcyl - vxInput[i][j] )
+               + ( vz   - vzInput[i][j] ) * ( vz   - vzInput[i][j] );
+         if(dist2 < minDist2) {
+            minDist2 = dist2;
+            minIndex_i = i;
+            minIndex_j = j;
          }
       }
-   //}
+   }
 
-   //if( !isAtmosphere ) {
-      // set density to value of nearest neighbor
+   // set density to value of nearest neighbor
    rhoRead = rhoInput[minIndex_i][minIndex_j]*scaleFactor;
-      //if( rhoRead < rhoISM ) isAtmosphere = true;
-   //}
 
    // set abundances to those of nearest neighbor
    HeRead = HeInput[minIndex_i][minIndex_j];

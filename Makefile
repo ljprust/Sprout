@@ -1,19 +1,19 @@
 
 RESTART   = h5in
-BOUNDARY  = dirichlet#cornermirror
-INITIAL   = sedov2d
+BOUNDARY  = cornermirror
+INITIAL   = boos
 HYDRO     = euler
-RIEMANN   = hllc_lm
+RIEMANN   = hllc_upwind
 GRAVITY   = slab
 NOZZLE    = wind
 SPACE     = plm
-TIMESTEP  = rk2
-MESHSPEED = broken_pl#homologous
-OUTPUT    = h5out#_withghost
+TIMESTEP  = rk3
+MESHSPEED = follow_fastest
+OUTPUT    = h5out
 
 UNAME = $(shell uname)
 ifeq ($(UNAME),Linux)
-H55 = /usr/lib/x86_64-linux-gnu/hdf5/serial
+H55 = /home/logan/hdf5-1.14.1-2/hdf5
 endif
 ifeq ($(UNAME),Darwin)
 H55 = /opt/homebrew/opt/hdf5

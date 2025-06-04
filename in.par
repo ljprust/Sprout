@@ -4,39 +4,45 @@
 Restart			0	//Restart from input.h5
 
 //Time Range//
-T_Start			1e-5
-T_End			1e-4
+T_Start			3.15576e8  // 10 yr
+T_End			9.46728e10 // 3000 yr
 
 //Output Frequency//
-Num_Reports		1e5
+Num_Reports		20000
 Num_Snapshots		0
-Num_Checkpoints		10
+Num_Checkpoints		20
 Use_Logtime		1
 
 //Grid Dimensions//
 Num_X			512
 Num_Y		        512
-Num_Z			1
-Lx      		2e-2 //2.5e-2
-Ly			2e-2 //2.5e-2
-Lz  		        1.0 //2.5e-2
+Num_Z			1024
+Lx      		1.6e18 // ~2*r0
+Ly			1.6e18
+Lz  		        3.2e18
 
 //Numerical Parameters//
-CFL			0.35
+CFL			0.3
 PLM			1.0
-Density_Floor		0.0
-Pressure_Floor		1e-8
+Density_Floor		1.0e-28 // rhoISM  = 6.31e-25
+Pressure_Floor		1.0e-12 // presISM = 4.04e-11
 
 //Mesh Motion Parameters//
 W0                      0.0
-W_frac                  1e-2
-Mesh_motion_x0		1e-2 //5e-3
-Mesh_motion_y0		1e-2 //5e-3
-Mesh_motion_z0		0.0
-
+W_frac                  1e-2 // never used???
+Mesh_motion_x0		0.0 // 1e-2 //5e-3
+Mesh_motion_y0		0.0 // 1e-2 //5e-3
+Mesh_motion_z0		1.6e18
+//eta_on			1.0
 
 //Hydro Parameters//
 Adiabatic_Index		1.66666666666666666667
+
+//Supernova Parameters//
+t_input			53.059
+v_max			5.0e9
+Ram_Pressure_Factor	1.0e-5
+rho_ISM			6.31e-25
 
 //Gravity Parameters//
 Gravity_Switch		0		//0=None, 1=Force, 2=Potential
@@ -52,3 +58,6 @@ Nozzle_Switch		0
 Nozzle_x0		1e-2 //5e-3
 Nozzle_y0		1e-2 //5e-3
 Nozzle_z0		0.0
+//Nozzle_Power		0.0
+//Nozzle_Speed		0.0
+

@@ -163,10 +163,10 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
       prim2cons( primFace, uFace, xl, 1.0 );
    }
 
+   // compute flux corrections
    double Q2dotw = fluxFace[SS1] * faceVelocity[0]
                  + fluxFace[SS2] * faceVelocity[1]
                  + fluxFace[SS3] * faceVelocity[2];
-
    fluxCorrection[DEN] = (C_U-C_F) * wn * uFace[DEN];
    fluxCorrection[SS1] = -C_F * fluxFace[DEN] * faceVelocity[0]
                        + (C_U-C_F) * wn * uFace[SS1];
@@ -176,10 +176,12 @@ void riemann1D( struct cell * cL , struct cell * cR , double dx , double dy , do
                        + (C_U-C_F) * wn * uFace[SS3];
    fluxCorrection[TAU] = -C_F * ( Q2dotw + 0.5 * fluxFace[DEN] * wn * wn )
                        + (C_U-C_F) * wn * uFace[TAU];
+
    for( q=NUM_C ; q<NUM_Q ; ++q ) {
       fluxCorrection[q] = (C_U-C_F) * wn * uFace[q];
    }
 
+   // apply flux corrections
    for( q=0 ; q<NUM_Q ; ++q ){
       Flux[q] = C_F*fluxFace[q] - fluxCorrection[q];
    }
