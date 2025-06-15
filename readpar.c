@@ -98,6 +98,7 @@ int read_par_file( struct domain * theDomain ){
          err += readvar( pfile , "n_power"         , VAR_DOUB , &(theList->n_power)         );
          err += readvar( pfile , "Mdot_wind"       , VAR_DOUB , &(theList->Mdot_wind)       );
          err += readvar( pfile , "v_wind"          , VAR_DOUB , &(theList->v_wind)          );
+         err += readvar( pfile , "CSM_Asymmetry"   , VAR_DOUB , &(theList->CSM_Asymmetry)   );
          err += readvar( pfile , "useQuadrant"     , VAR_INT  , &(theList->useQuadrant)     );
       }
       MPI_Barrier(MPI_COMM_WORLD);

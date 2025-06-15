@@ -22,6 +22,7 @@ static double rt = 0.0;
 static double vt = 0.0;
 static double r0 = 0.0;
 static double rhoprefactor = 0.0;
+static double CSMAsymmetry = 0.0;
 
 void setICParams( struct domain * theDomain ){
    // constants
@@ -44,6 +45,7 @@ void setICParams( struct domain * theDomain ){
    // CSM parameters
    vwind  = 1.0e5 * theDomain->theParList.v_wind;
    Mdot   = Msun/yr * theDomain->theParList.Mdot_wind;
+   CSMAsymmetry = theDomain->theParList.CSM_Asymmetry;
 
    // model a quadrant of the cube or just an octant
    quadrant = theDomain->theParList.useQuadrant;
@@ -59,7 +61,7 @@ void setICParams( struct domain * theDomain ){
 
 void initial( double * prim , double * xi , double t , bool debug ){
 
-   double x, y, z, r;
+   double x, y, z, r, theta, CSMAsymmetryFactor;
    double rhoOut, rhoIn;
 
    x = xi[0];
@@ -71,6 +73,9 @@ void initial( double * prim , double * xi , double t , bool debug ){
    }
 
    r = sqrt( x*x + y*y + z*z );
+   theta = acos(z/r);
+
+   CSMAsymmetryFactor = 1.0 + CSMAsymmetry*cos(theta);
 
    rhoOut = rhoprefactor*pow(r/rt,-nPower);
    rhoIn  = rhoprefactor*pow(r/rt,-deltaPower);
@@ -88,7 +93,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
       prim[UU3] = z/r0 * vmax;
       prim[XXX] = 1.0;
    } else { // ISM
-      prim[RHO] = Mdot/4.0/3.14159/r/r/vwind;
+      prim[RHO] = Mdot/4.0/3.14159/r/r/vwind*CSMAsymmetryFactor;
       prim[UU1] = 0.0;
       prim[UU2] = 0.0;
       prim[UU3] = 0.0;

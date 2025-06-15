@@ -41,7 +41,7 @@ struct param_list{
 
    double v_max, Ram_Pressure_Factor;
    double M_ejecta, E_ejecta, delta_power, n_power;
-   double Mdot_wind, v_wind;
+   double Mdot_wind, v_wind, CSM_Asymmetry;
    int useQuadrant;
 };
 
