@@ -40,6 +40,9 @@ struct param_list{
    int restart_flag;
 
    double t_input, rho_ISM, v_max, Ram_Pressure_Factor;
+
+   int Wind_Switch;
+   double Mdot_wind, v_wind, wind_radius;
 };
 
 struct cell{

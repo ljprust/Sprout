@@ -94,6 +94,10 @@ int read_par_file( struct domain * theDomain ){
 	 err += readvar( pfile , "rho_ISM"         , VAR_DOUB , &(theList->rho_ISM)         );
 	 err += readvar( pfile , "v_max"           , VAR_DOUB , &(theList->v_max)           );
 	 err += readvar( pfile , "Ram_Pressure_Factor", VAR_DOUB , &(theList->Ram_Pressure_Factor)         );
+         err += readvar( pfile , "Mdot_wind"       , VAR_DOUB , &(theList->Mdot_wind)       );
+         err += readvar( pfile , "v_wind"          , VAR_DOUB , &(theList->v_wind)          );
+         err += readvar( pfile , "wind_radius"     , VAR_DOUB , &(theList->wind_radius)     );
+         err += readvar( pfile , "Wind_Switch"     , VAR_INT  , &(theList->Wind_Switch)     );
       }
       MPI_Barrier(MPI_COMM_WORLD);
    }
