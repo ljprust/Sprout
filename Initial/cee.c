@@ -71,7 +71,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    vy = y/t0;
    vz = z/t0;
 
-   diskHeight = Rsun*(95.0*log10(r)-125.0);
+   diskHeight = Rsun*(95.0*log10(r/Rsun)-125.0);
    rhoCEE = 0.01*pow(r/10.0/Rsun,-4.0)*pow(1.0+pow(125.0*Rsun/r,3.5),-1.05)
           * exp(-z*z/2.0/diskHeight/diskHeight);
 
