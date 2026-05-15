@@ -73,7 +73,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
 
    diskHeight = Rsun*(95.0*log10(r/Rsun)-125.0);
    rhoCEE = 0.01*pow(r/10.0/Rsun,-4.0)*pow(1.0+pow(125.0*Rsun/r,3.5),-1.05)
-          * exp(-z*z/2.0/diskHeight/diskHeight);
+          * exp(-x*x/2.0/diskHeight/diskHeight);
 
    v0sq = 4.0/3.0*Eej/Mej;
    rhoSunny = pow(3.0/4.0/3.14159, 1.5) * pow(Mej, 2.5)/pow(Eej, 1.5) /t0/t0/t0 * exp(-r*r/t0/t0/v0sq);
