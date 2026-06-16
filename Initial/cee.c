@@ -17,6 +17,7 @@ static double tdelay = 0.0;
 static double Rdisk  = 0.0;
 static double Rsun   = 0.0;
 static double ramPressureFactor = 0.0;
+static double Rgas   = 0.0;
 static bool   quadrant = false;
 
 void setICParams( struct domain * theDomain ){
@@ -25,6 +26,7 @@ void setICParams( struct domain * theDomain ){
    day    = 24.0*3600.0; // sec
    Rsun   = 7.0e10; // cm
    Msun   = 2.0e33; // g
+   Rgas   = 8.314e7; // cgs
 
    // domain size
    Lz     = theDomain->theParList.Lz;
@@ -53,7 +55,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    double x, y, z, r;
    double vx, vy, vz;
    bool isEjecta = false;
-   double scaleFactor, rhoCEE, diskHeight, rhoSunny, v0sq;
+   double scaleFactor, rhoCEE, diskHeight, rhoSunny, v0sq, temp;
 
    // scale CEE rho to current time
    scaleFactor = 1.0; // pow((tdelay-tinput)/tinput,3.0)
@@ -78,34 +80,40 @@ void initial( double * prim , double * xi , double t , bool debug ){
    v0sq = 4.0/3.0*Eej/Mej;
    rhoSunny = pow(3.0/4.0/3.14159, 1.5) * pow(Mej, 2.5)/pow(Eej, 1.5) /t0/t0/t0 * exp(-r*r/t0/t0/v0sq);
 
+   temp = 4.5e4/(r/100.0/Rsun);
+
    // define primitives
    if( r < vmax*t0 ) { // ejecta
       prim[RHO] = rhoSunny;
       prim[UU1] = vx;
       prim[UU2] = vy;
       prim[UU3] = vz;
+      prim[PPP] = 0.7e14*pow(rhoSunny,1.666666667);
       prim[XXX] = 1.0; // tracks ejecta fraction
    } else if ( r < Rdisk ) { // disk
       prim[RHO] = rhoCEE;
       prim[UU1] = 0.0;
       prim[UU2] = 0.0;
       prim[UU3] = 0.0;
+      prim[PPP] = rhoCEE*Rgas*temp;
       prim[XXX] = 0.0;
    } else if (rhoCEE*scaleFactor>rhoISM) { // CEE outflow
       prim[RHO] = rhoCEE/scaleFactor;
       prim[UU1] = 0.0;
       prim[UU2] = 0.0;
       prim[UU3] = 0.0;
+      prim[PPP] = rhoCEE*Rgas*temp;
       prim[XXX] = 0.0;
    } else { // ISM
       prim[RHO] = rhoISM;
       prim[UU1] = 0.0;
       prim[UU2] = 0.0;
       prim[UU3] = 0.0;
+      prim[PPP] = rhoISM*Rgas*100.0;
       prim[XXX] = 0.0;
    }
 
    // set pressure to small fraction of ram pressure
-   prim[PPP] = ramPressureFactor*vmax*vmax*prim[RHO];
+   //prim[PPP] = ramPressureFactor*vmax*vmax*prim[RHO];
 }
 
