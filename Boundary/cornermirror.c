@@ -1,5 +1,6 @@
 
 #include "../defs.h"
+#include <stdbool.h>
 
 /* These are useful for situations involving mirror symmetry about a corner, e.g.,
    an octant of a 3D explosion. The left hand boundaries incorporate a Neumann
@@ -7,7 +8,7 @@
    component of the concerned dimension be mirrored in the ghost zones. The right
    hand side boundaries use a Dirichlet BC. */
 
-void initial( double * , double * , double );
+void initial( double * , double * , double , bool , bool );
 void prim2cons( double * , double * , double * , double );
 
 void set_cells_left( struct cell * cR , struct cell * cS , double dl , double t , int theDIM ){
@@ -27,7 +28,7 @@ void set_cells_right( struct cell * cR , struct cell * cS , double dl , double t
 
    memcpy( cR->xi , cS->xi , 3*sizeof(double) );
    cR->xi[theDIM] += dl;
-   initial( cR->prim , cR->xi , t );
+   initial( cR->prim , cR->xi , t , false , false );
    //make density neumann
    /*double buff[NUM_Q];
    memcpy( buff , cS->prim , NUM_Q*sizeof(double) );

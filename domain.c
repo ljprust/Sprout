@@ -24,7 +24,7 @@ void setupDomain( struct domain * theDomain ){
 
 void restart( struct domain * );
 void exchange1D( struct domain * , int );
-void initial( double * , double * , double , bool );
+void initial( double * , double * , double , bool , bool );
 void prim2cons( double * , double * , double * , double );
 
 int getN0( int , int , int );
@@ -56,7 +56,7 @@ void setupCells( struct domain * theDomain ){
             if( theDomain->theParList.Num_z != 1 ) ijk += (Nx+2*Ng)*(Ny+2*Ng)*(k+Ng);
             struct cell * c = theCells+ijk;
             //set prims
-            if(!restart_flag) initial( c->prim , c->xi , t , debug );
+            if(!restart_flag) initial( c->prim , c->xi , t , debug , true );
             prim2cons( c->prim , c->cons , c->xi , dx*dy*dz );
             //set gradients
             for( q=0 ; q<NUM_Q ; ++q ){

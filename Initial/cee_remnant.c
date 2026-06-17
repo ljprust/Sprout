@@ -40,7 +40,7 @@ void setICParams( struct domain * theDomain ){
    tinput = theDomain->theParList.t_input;
 
    // model a quadrant of the cube or just an octant
-   quadrant = true;
+   quadrant = false;
 
    ////// READ DATA FROM TXT FILES //////
 
@@ -86,7 +86,7 @@ void setICParams( struct domain * theDomain ){
    printf("Done reading input data, closed files\n");
 }
 
-void initial( double * prim , double * xi , double t , bool debug ){
+void initial( double * prim , double * xi , double t , bool debug , bool initialize ){
 
    double x, y, z;
    double vx, vy, vz, vcyl;
@@ -98,52 +98,57 @@ void initial( double * prim , double * xi , double t , bool debug ){
    bool isEjecta = false;
    double scaleFactor;
 
-   // scale rho to current time
-   scaleFactor = tinput*tinput*tinput/t0/t0/t0;
+   if( initialize ) {
 
-   x = xi[0];
-   y = xi[1];
-   z = xi[2];
+      // scale rho to current time
+      scaleFactor = tinput*tinput*tinput/t0/t0/t0;
 
-   // shift z values if we're doing a quadrant
-   if( quadrant ) {
-      x = x - Lx/2.0;
-   }
+      x = xi[0];
+      y = xi[1];
+      z = xi[2];
 
-   // determine fluid velocities
-   vx = x/t0;
-   vy = y/t0;
-   vz = z/t0;
-   vcyl = sqrt(vy*vy + vz*vz);
-
-   for( i=0 ; i<NINPUT ; ++i ){
-      dist2 = ( vx   - xInput[i]/tinput ) * ( vx   - xInput[i]/tinput )
-            + ( vcyl - zInput[i]/tinput ) * ( vcyl - zInput[i]/tinput );
-      if(dist2 < minDist2) {
-         minDist2 = dist2;
-         minIndex = i;
+      // shift z values if we're doing a quadrant
+      if( quadrant ) {
+         x = x - Lx/2.0;
       }
+
+      // determine fluid velocities
+      vx = x/t0;
+      vy = y/t0;
+      vz = z/t0;
+      vcyl = sqrt(vy*vy + vz*vz);
+
+      for( i=0 ; i<NINPUT ; ++i ){
+         dist2 = ( vx   - xInput[i]/tinput ) * ( vx   - xInput[i]/tinput )
+               + ( vcyl - zInput[i]/tinput ) * ( vcyl - zInput[i]/tinput );
+         if(dist2 < minDist2) {
+            minDist2 = dist2;
+            minIndex = i;
+         }
+      }
+
+      // set density to value of nearest neighbor
+      rhoRead = rhoInput[minIndex]*scaleFactor;
+
+      // set abundance to that of nearest neighbor
+      tracerRead = tracerInput[minIndex];
+
+      // check if nearest neighbor is ejecta cell (vr > 1 km/s)
+      vrRead = vrInput[minIndex];
+      if( vrRead > 1.0e5 ) isEjecta = true;
+
+      // various debug messages
+      if ( debug && isEjecta ) {
+         printf("found neighbor with index %d\n",minIndex);
+         //printf("read rho %5.3e\n",rhoRead);
+         //printf("x y z minDist2 %5.3e %5.3e %5.3e %5.3e\n",x,y,z,minDist2);
+      }
+
+   } else {
+
+      isEjecta = false;
+
    }
-
-   // set density to value of nearest neighbor
-   rhoRead = rhoInput[minIndex]*scaleFactor;
-
-   // set abundance to that of nearest neighbor
-   tracerRead = tracerInput[minIndex];
-
-   // check if nearest neighbor is ejecta cell (vr > 1 km/s)
-   vrRead = vrInput[minIndex];
-   if( vrRead > 1.0e5 ) isEjecta = true;
-
-   // various debug messages
-   if ( debug && isEjecta ) {
-      printf("found neighbor with index %d\n",minIndex);
-      //printf("read rho %5.3e\n",rhoRead);
-      //printf("x y z minDist2 %5.3e %5.3e %5.3e %5.3e\n",x,y,z,minDist2);
-   }
-
-   // make sure ejecta doesn't touch +z boundary
-   //if( quadrant && vz > 4.5e9 ) isEjecta = false;
 
    // define primitives
    if( isEjecta ) {
