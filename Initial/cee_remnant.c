@@ -88,8 +88,8 @@ void setICParams( struct domain * theDomain ){
 
 void initial( double * prim , double * xi , double t , bool debug ){
 
-   double x, y, z, rcyl;
-   double vx, vy, vz;
+   double x, y, z;
+   double vx, vy, vz, vcyl;
    int i;
    int minIndex = 0;
    double dist2;
@@ -99,12 +99,11 @@ void initial( double * prim , double * xi , double t , bool debug ){
    double scaleFactor;
 
    // scale rho to current time
-   scaleFactor = tinput/t0;
+   scaleFactor = tinput*tinput*tinput/t0/t0/t0;
 
    x = xi[0];
    y = xi[1];
    z = xi[2];
-   rcyl = sqrt(y*y + z*z);
 
    // shift z values if we're doing a quadrant
    if( quadrant ) {
@@ -115,10 +114,11 @@ void initial( double * prim , double * xi , double t , bool debug ){
    vx = x/t0;
    vy = y/t0;
    vz = z/t0;
+   vcyl = sqrt(vy*vy + vz*vz);
 
    for( i=0 ; i<NINPUT ; ++i ){
-      dist2 = ( x    - xInput[i]*scaleFactor ) * ( x    - xInput[i]*scaleFactor )
-            + ( rcyl - zInput[i]*scaleFactor ) * ( rcyl - zInput[i]*scaleFactor );
+      dist2 = ( vx   - xInput[i]/tinput ) * ( vx   - xInput[i]/tinput )
+            + ( vcyl - zInput[i]/tinput ) * ( vcyl - zInput[i]/tinput );
       if(dist2 < minDist2) {
          minDist2 = dist2;
          minIndex = i;
@@ -126,7 +126,7 @@ void initial( double * prim , double * xi , double t , bool debug ){
    }
 
    // set density to value of nearest neighbor
-   rhoRead = rhoInput[minIndex]*scaleFactor*scaleFactor*scaleFactor;
+   rhoRead = rhoInput[minIndex]*scaleFactor;
 
    // set abundance to that of nearest neighbor
    tracerRead = tracerInput[minIndex];
@@ -136,11 +136,11 @@ void initial( double * prim , double * xi , double t , bool debug ){
    if( vrRead > 1.0e5 ) isEjecta = true;
 
    // various debug messages
-   //if ( debug || false ) {
-   //   printf("found neighbor with index %d\n",minIndex);
-   //   printf("read rho %5.3e\n",rhoRead);
-   //   printf("x y z minDist2 %5.3e %5.3e %5.3e %5.3e\n",x,y,z,minDist2);
-   //}
+   if ( debug && isEjecta ) {
+      printf("found neighbor with index %d\n",minIndex);
+      //printf("read rho %5.3e\n",rhoRead);
+      //printf("x y z minDist2 %5.3e %5.3e %5.3e %5.3e\n",x,y,z,minDist2);
+   }
 
    // make sure ejecta doesn't touch +z boundary
    //if( quadrant && vz > 4.5e9 ) isEjecta = false;
